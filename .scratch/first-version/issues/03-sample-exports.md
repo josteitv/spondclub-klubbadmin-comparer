@@ -1,14 +1,14 @@
 # Get sample exports from Spond Club and KlubbAdmin
 
 Type: task
-Status: claimed
+Status: resolved
 Blocked by: 01, 02
 
 ## Question
 
 The user (HITL) exports the member lists from both systems into `.private/`: from Spond Club (Members → Active members → select all → Export), and from KlubbAdmin (member search → export to Excel, including foresatte and gruppe/gren). Check whether the Spond Club export carries each Player's groups; if not, raise it as a decision rather than adding another export. The agent then confirms the actual structure (column names, formats, encodings, how Players/Guardians appear) against the research in 01 and 02 — reading structure only, never copying real values out. Record the confirmed structure (columns, types, quirks) in the answer.
 
-## Findings so far
+## Answer
 
 Read from the exports in `.private/` on 2026-10-25. Only structure, formats and rough proportions are recorded here, never values.
 
@@ -53,7 +53,7 @@ Read from the exports in `.private/` on 2026-10-25. Only structure, formats and 
   - `Medlem fra dato`: text `dd.mm.yyyy`.
   - `Grupper/grener`: several entries joined by `|`.
   - `Medlemsdetaljer`.
-- **Gap:** the sample has only 3 Members. It also lacks the foresatte, kontingent and statsborgerskap columns, and the "verified with fødselsnummer" flag. Neither the column set for those fields nor data quality can be confirmed until a full export with those fields is available.
+- **Basis for the first version:** the sample has only 3 Members and the default field selection. By decision (2026-10-25) no larger export is made; this file defines the KlubbAdmin format the first version accepts. Data quality at scale is unconfirmed.
 
 ### Differences that matter for matching (04)
 
@@ -70,4 +70,4 @@ Decided 2026-10-25: Players are rows with `Medlemstype = Medlem` only. Matching 
 
 1. ~~**Who is a Player?**~~ Decided above.
 2. ~~**Group names containing `", "`:**~~ Decided 2026-10-25: show the `Grupper` cell unsplit; the result is not grouped by Spond group. how should the tool split `Grupper`? One option is to take the known group names from the `Undergruppe` parents and the single-group cells. Another is to show the cell unsplit.
-3. **KlubbAdmin export:** a full export (all Members) is still needed to confirm the structure at scale. Since matching uses full name only and shows birth date (see 04), the default fields (name, birth date) are enough; foresatte, kontingent and statsborgerskap are not needed.
+3. ~~**KlubbAdmin export:**~~ Decided 2026-10-25: no larger export; the 3-Member sample is the basis for the first version. a full export (all Members) is still needed to confirm the structure at scale. Since matching uses full name only and shows birth date (see 04), the default fields (name, birth date) are enough; foresatte, kontingent and statsborgerskap are not needed.
