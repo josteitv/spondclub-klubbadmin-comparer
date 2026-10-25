@@ -18,7 +18,7 @@ The club representative (medlemsansvarlig) who runs the comparison and registers
 _Avoid_: Admin, user
 
 **Player**:
-An active member of the club in Spond Club, in their own right — not a Guardian or a group admin. Their Spond groups are an attribute of the Player.
+An active member of the club in Spond Club, in their own right, registered with member type "Medlem" — not a Guardian, and not someone Spond Club lists as "Ikke medlem". Their Spond groups are an attribute of the Player.
 _Avoid_: Participant, Spond member
 
 **Guardian**:
@@ -34,6 +34,10 @@ _Avoid_: User; and never for people in Spond Club (Spond calls them "members" to
 **Unregistered player**:
 A Player with no matching Member in KlubbAdmin. Finding these is the tool's main purpose.
 _Avoid_: Unregistered participant, missing member, non-member
+
+**Possible match**:
+A Player and a Member whose full names are close but not the same, shown for the Membership manager to judge.
+_Avoid_: Fuzzy match, near match
 
 **Absent member**:
 A Member with no matching Player in Spond Club, whether they were removed from Spond Club or never added.

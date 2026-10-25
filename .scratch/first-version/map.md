@@ -2,7 +2,7 @@
 
 ## Destination
 
-A finished spec for the first version: a tool the Membership manager runs to list Unregistered players (Spond Club → KlubbAdmin) with the details needed to register them in KlubbAdmin, plus a simple list of Absent members. Ready to hand to `/to-spec`.
+A finished spec for the first version: a tool the Membership manager runs to list Unregistered players (Spond Club → KlubbAdmin), Possible matches, and a simple list of Absent members. Ready to hand to `/to-spec`.
 
 ## Notes
 
@@ -11,10 +11,10 @@ A finished spec for the first version: a tool the Membership manager runs to lis
 - GDPR: exports contain personal data. Export data, and anything derived from it, never leaves the browser; third-party code, fonts, analytics and error reporting are allowed but must never carry it. Real exports live only in `.private/` (gitignored); agents read their structure (columns, formats), never copy real values into code, tests, docs or tickets. Tests use invented data.
 - Input is manual exports from both systems (preferred over APIs).
 - The club uses Spond Club, but not its NIF integration: Spond Club is not the club's membership system for NIF, so the tool doesn't duplicate an existing sync. Spond Club offers a club-wide .xlsx export of active members.
-- Only Players count from Spond Club — active members in Spond Club, not Guardians, not group admins. Their groups come from a field in the Spond Club export (to confirm in "Get sample exports"; if absent, revisit).
-- One run covers the whole club; Unregistered players are grouped by Spond group, a Player in several groups appears once with all groups listed.
-- The list of Unregistered players carries every field KlubbAdmin needs for registration, flagging fields Spond Club lacks.
+- Only Players count from Spond Club: active members with member type `Medlem` (not `Ikke medlem`), not Guardians. Their groups come from the `Grupper` column of the Spond Club export (confirmed in 03).
+- One run covers the whole club; each Player appears once. Their groups are shown as the Spond Club `Grupper` cell, unsplit (some group names contain the `", "` separator), so the result is not grouped by Spond group.
 - No exception list in the first version.
+- Matching compares full name only (Player in Spond Club vs Member in KlubbAdmin). Identical names after normalisation are a match; close names (e.g. missing middle name, typo) are shown as Possible matches for the Membership manager to judge. Birth date and group are shown in the result when available, for viewing only, never compared. No registration fields are shown. Details of the name rule are settled in [04](issues/04-matching.md).
 - A future offline version for Windows packages the same app in an installer. No technical choice for the web version may conflict with it: the app works fully offline once loaded (code, parser and fonts bundled, no CDN at runtime; analytics and error reporting optional and fail silently), with relative asset paths. See [offline-version](../offline-version/issues/01-offline-version.md).
 
 ## Decisions so far
