@@ -109,7 +109,7 @@ See [05](issues/05-how-to-run.md) and [07](issues/07-build-tool.md).
 
 - **Language and framework:** TypeScript with Preact ([09](issues/09-framework.md)).
 - **Build and tests:** Vite 8 and Vitest. CI runs `tsc --noEmit` separately, since Vite doesn't type-check.
-- **`.xlsx` parser:** bundled; chosen in [08](issues/08-xlsx-parser.md).
+- **`.xlsx` parser:** `read-excel-file` 9.x via its `/universal` entry (no workers), pinned to `~9` and used only inside our own export-reading module ([08](issues/08-xlsx-parser.md)). Test fixtures come from `write-excel-file` plus an `fflate` helper.
 - **SRI:** through a Vite plugin (e.g. `vite-plugin-sri-gen`), checked to work on Vite 8.
 - **Deployment:** GitHub Actions deploys to GitHub Pages.
 - **Repo:** public, MIT license.
@@ -134,4 +134,4 @@ See [05](issues/05-how-to-run.md) and [07](issues/07-build-tool.md).
 
 ## Open choices for implementation
 
-- **`.xlsx` parser:** which library; research running in [08](issues/08-xlsx-parser.md).
+None. The last one, the `.xlsx` parser, was settled in [08](issues/08-xlsx-parser.md).
