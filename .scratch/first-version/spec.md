@@ -20,14 +20,12 @@ See [ADR 0001](../../docs/adr/0001-browser-only-static-web-page.md) and [05](iss
 
 - **Static web page with no backend**, hosted on GitHub Pages, with our own domain later. Every push to `main` deploys, and the page shows its version.
 - **Export data never leaves the browser.** That covers the exports and anything derived from them. Enforced by:
-  - a CSP that allowlists only the domains in use, kept by hand and checked by a CI test against the built `index.html`;
-  - Subresource Integrity on any CDN script;
-  - one choke point for analytics and error reports, which sends only fixed event names and error codes. There is no session replay and no breadcrumbs that capture content. A test with invented exports asserts that no file value reaches the choke point.
+  - **No third-party origins at all.** There is no CDN, no external fonts, no analytics and no error reporting ([10](issues/10-analytics.md)).
+  - **A strict CSP:** `default-src 'self'`, `connect-src 'none'`, no inline scripts. The page can't make any network request of its own, so the browser enforces the guarantee. A CI test checks the CSP and that the built page references no external origin.
 - **Nothing is stored.** No local storage and no cookies holding export data. Closing the tab wipes everything. The page reminds the Membership manager to delete the downloaded exports.
 - **Offline-compatible.** A later Windows offline version will package this same page ([offline-version](../offline-version/issues/01-offline-version.md)). So:
   - The page works fully without network once loaded.
   - Code, the `.xlsx` parser and fonts are bundled, never loaded from a CDN at runtime.
-  - Analytics and error reporting are optional and fail silently.
   - Asset paths are relative.
 
 ## Input
@@ -109,9 +107,9 @@ Norwegian bokmål and English. The language is picked from the browser language,
 
 See [05](issues/05-how-to-run.md) and [07](issues/07-build-tool.md).
 
-- **Language and framework:** TypeScript, with Svelte or Preact.
-- **Build and tests:** Vite 8 and Vitest. CI runs `tsc --noEmit` / `svelte-check` separately, since Vite doesn't type-check.
-- **`.xlsx` parser:** bundled, chosen after checking how candidates are licensed and maintained.
+- **Language and framework:** TypeScript with Preact ([09](issues/09-framework.md)).
+- **Build and tests:** Vite 8 and Vitest. CI runs `tsc --noEmit` separately, since Vite doesn't type-check.
+- **`.xlsx` parser:** bundled; chosen in [08](issues/08-xlsx-parser.md).
 - **SRI:** through a Vite plugin (e.g. `vite-plugin-sri-gen`), checked to work on Vite 8.
 - **Deployment:** GitHub Actions deploys to GitHub Pages.
 - **Repo:** public, MIT license.
@@ -121,7 +119,7 @@ See [05](issues/05-how-to-run.md) and [07](issues/07-build-tool.md).
 - All tests use invented data, never values from `.private/`.
 - **Matching:** unit tests for every rule in 04, including duplicates, the length threshold, word order, accents vs æ/ø/å, empty name fields, and many-to-many Possible matches.
 - **Parsing:** tests with generated `.xlsx` files that mirror the confirmed structure of both exports. These cover Excel date serials, text dates, `|`-joined grupper/grener, trailing empty rows and missing required columns.
-- **Privacy:** a test that no export value reaches the analytics/error choke point, and a CI check that the CSP allowlist matches the built page.
+- **Privacy:** a CI check that the built page has the strict CSP and references no external origin.
 
 ## Out of scope
 
@@ -132,9 +130,8 @@ See [05](issues/05-how-to-run.md) and [07](issues/07-build-tool.md).
 - Field-level differences (phone, address, …) and registration fields for KlubbAdmin.
 - Telling "removed from Spond Club" apart from "never in Spond Club".
 - Filtering KlubbAdmin-only members by gruppe/gren or membership type.
+- Analytics, and error reporting of any kind (automatic or a "report a problem" link); see [error-reporting](../error-reporting/issues/01-error-reporting.md). Errors are shown to the Membership manager as clear messages only.
 
 ## Open choices for implementation
 
-- **Framework:** Svelte or Preact.
-- **`.xlsx` parser:** which library, after the licensing and maintenance check.
-- **Analytics and error reporting:** whether to have them at all in the first version and, if so, which cookieless EU/EEA providers.
+- **`.xlsx` parser:** which library; research running in [08](issues/08-xlsx-parser.md).

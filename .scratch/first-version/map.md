@@ -8,7 +8,7 @@ A finished spec for the first version: a tool the Membership manager runs to lis
 
 - Vocabulary: read `GLOSSARY.md` (renamed 2026-10-25: Player → Spond Club member, Member → KlubbAdmin member, Unregistered player → Unregistered member, Absent member → KlubbAdmin-only member; resolved tickets keep the old words); call the Skill tool for "domain-modeling" whenever a term is challenged or resolved.
 - The user of the tool is the Membership manager: not tech-savvy. The tool is a static web page that processes the exports in the browser (see "How will the Membership manager run the tool?" and ADR 0001).
-- GDPR: exports contain personal data. Export data, and anything derived from it, never leaves the browser; third-party code, fonts, analytics and error reporting are allowed but must never carry it. Real exports live only in `.private/` (gitignored); agents read their structure (columns, formats), never copy real values into code, tests, docs or tickets. Tests use invented data.
+- GDPR: exports contain personal data. Export data, and anything derived from it, never leaves the browser. The first version has no third-party origins and a strict CSP that blocks the page's own network requests (amended ADR 0001, [10](issues/10-analytics.md)). Real exports live only in `.private/` (gitignored); agents read their structure (columns, formats), never copy real values into code, tests, docs or tickets. Tests use invented data.
 - Input is manual exports from both systems (preferred over APIs).
 - The club uses Spond Club, but not its NIF integration: Spond Club is not the club's membership system for NIF, so the tool doesn't duplicate an existing sync. Spond Club offers a club-wide .xlsx export of active members.
 - Only Spond Club members count from Spond Club: people with member type `Medlem` (not `Ikke medlem`), not Guardians. Their groups come from the `Grupper` column of the Spond Club export (confirmed in 03).
@@ -30,6 +30,8 @@ A finished spec for the first version: a tool the Membership manager runs to lis
 - [Get sample exports from Spond Club and KlubbAdmin](issues/03-sample-exports.md): both exports are one sheet with one header row. Spond Club has one row per member, with Guardians as nested columns, dates as Excel serials and groups in one unsplittable `Grupper` cell. KlubbAdmin has all-text cells with `dd.mm.yyyy` dates, PersonId, and `|`-joined grupper/grener. Spond Club members are `Medlemstype = Medlem` rows. The 3-person KlubbAdmin sample is the accepted basis for the first version.
 - [How do we recognise the same person in both systems?](issues/04-matching.md): full name only (first + last, word order, case, spaces, hyphens and accents ignored; æ/ø/å kept). Exact match only when the name is unique on both sides. Otherwise Possible match by missing words (shorter name ≥ 2 words) or Levenshtein ≤ 1 (< 10 letters) / ≤ 2, one rule at a time. Levenshtein alone was rejected because missing middle names are common.
 - [What does the report look like?](issues/06-report.md): one read-only page, read top to bottom. A summary of counts comes first, then Unregistered members, Possible matches (side by side with reason), everyone Found in both and, last, KlubbAdmin-only members, each with name, birth date and group. No decisions or checkboxes. The prototype is on branch `prototype/report`.
+- [Svelte or Preact?](issues/09-framework.md): Preact. Components are plain TypeScript checked by `tsc`, and the patterns are the ones models and developers know best. Svelte's build-time compiler was not a decisive advantage for AI-driven development.
+- [Analytics and error reporting in the first version?](issues/10-analytics.md): neither. No analytics, no automatic error reporting, no report link (a later feature: [error-reporting](../error-reporting/issues/01-error-reporting.md)). With no third-party origins, the CSP is strict (`default-src 'self'`, `connect-src 'none'`), so the browser itself blocks any upload; ADR 0001 amended.
 - [Which build tool produces the static web page?](issues/07-build-tool.md): Vite 8 with Vitest (the default for Svelte and Preact, with a GitHub Pages guide); SRI through a third-party plugin until Vite has it built in; CI type-checks separately; the CSP allowlist is kept by hand and checked by a CI test. Runner-up Rsbuild (built-in SRI).
 
 ## Not yet specified
@@ -39,6 +41,7 @@ Nothing. The last three points (data quality, which KlubbAdmin members are expec
 ## Out of scope
 
 - Saving a session between runs: the first version leaves no data behind; see [saved-session](../saved-session/issues/01-saved-session.md).
+- Analytics and error reporting: see [error-reporting](../error-reporting/issues/01-error-reporting.md).
 - The offline version for Windows: see [offline-version](../offline-version/issues/01-offline-version.md).
 - Exception lists ("not expected in Spond Club").
 - Deciding Possible matches in the tool ("same person" / "not the same") or ticking off Spond Club members as registered; may be added later (see [06](issues/06-report.md)).
