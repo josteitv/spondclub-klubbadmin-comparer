@@ -1,2 +1,6 @@
 # Real exports from Spond Club/KlubbAdmin contain personal data (GDPR). Never commit them.
 .private/
+
+node_modules/
+dist/
+*.tsbuildinfo

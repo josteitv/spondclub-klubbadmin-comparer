@@ -11,7 +11,7 @@ The Membership manager drops the club's Spond Club export and KlubbAdmin export 
 ## Users and context
 
 - **User:** the club's Membership manager. Not tech-savvy. Uses a Windows 11 PC, a few times a year.
-- **Browsers:** current desktop Edge, Chrome, Firefox and Safari. Phones and tablets are not targeted.
+- **Browsers:** current desktop Edge, Chrome, Firefox and Safari. Phones and tablets are not targeted. Safari is checked with Playwright's WebKit build, since no Mac is available (decided 2026-10-25).
 - **Other clubs:** the tool should work for other clubs too; nothing is specific to one club.
 
 ## Form and privacy

@@ -1,7 +1,7 @@
 # Project skeleton: Vite + Preact + CI + strict CSP + GitHub Pages
 
 Type: task
-Status: ready-for-agent
+Status: claimed
 Blocked by: none (the deploy step needs [17](17-enable-github-pages.md) before it can be verified)
 
 ## What to build
@@ -35,3 +35,7 @@ A Vitest or Node script that reads `dist/index.html` and fails if:
 - [ ] The built page has no console CSP violations in Chrome and Firefox.
 - [ ] The page shows the version.
 - [ ] A push to `main` deploys to GitHub Pages (once 17 is done).
+
+## Comments
+
+- 2026-10-25, agent: built. Versions: Vite 8.3.5, Preact 11.0.2, TypeScript 7.0.2, Vitest 5.0.5, jsdom 30, vite-plugin-sri-gen 1.7.5. The CSP lives in `build/csp.ts`; it is injected at build time only, because the dev server's inline styles would break under it. The SRI plugin's inline import map and dynamic-tag runtime are turned off, since they would need `'unsafe-inline'`. Verified locally: typecheck, 8 tests, build and `check:dist` pass. In headless Chromium and Firefox (Playwright), the built page loads with no console errors and a probe `fetch` to another origin is blocked. Not yet verified: CI on GitHub, the GitHub Pages deploy (needs 17), and WebKit (needs `sudo npx playwright install-deps webkit` in WSL).
