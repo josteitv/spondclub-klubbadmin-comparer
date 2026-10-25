@@ -24,5 +24,6 @@ The working tool: drop the two exports, see the report. See [spec](../spec.md) "
 
 - [ ] Component tests with invented data: both drop orders; the same kind of file twice; an unrecognised file; all four sections rendered with the right people; sorting with æ/ø/å.
 - [ ] A test asserts nothing is written to any browser storage.
+- [ ] The "Under utvikling" notice is removed from the page (`src/app.tsx`, its test and CSS), and the work-in-progress note is removed from `README.md`.
 - [ ] Works in the built page under the strict CSP, at desktop widths in Edge, Chrome, Firefox and Safari.
 - [ ] The user checks the report manually with the real exports. Agents never load the files in `.private/` into the tool; see CLAUDE.md.
