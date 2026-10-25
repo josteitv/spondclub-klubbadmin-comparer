@@ -9,3 +9,4 @@ The tool is a static web page with no backend. The Membership manager drops the 
 - Prefer cookieless providers that process data in the EU/EEA, since every request still sends the Membership manager's IP address.
 - The first version stores nothing in the browser; closing the tab wipes everything.
 - Adding a backend, or any feature that uploads export data, reverses this decision.
+- A desktop app is rejected for the first version only. A later offline version for Windows will package this same page in an installer (see `.scratch/offline-version/`), so the page must run fully offline once loaded: its code, `.xlsx` parser and fonts are bundled rather than loaded from a CDN at runtime, analytics and error reporting fail silently, and asset paths are relative.

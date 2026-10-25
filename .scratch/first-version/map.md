@@ -15,6 +15,7 @@ A finished spec for the first version: a tool the Membership manager runs to lis
 - One run covers the whole club; Unregistered players are grouped by Spond group, a Player in several groups appears once with all groups listed.
 - The list of Unregistered players carries every field KlubbAdmin needs for registration, flagging fields Spond Club lacks.
 - No exception list in the first version.
+- A future offline version for Windows packages the same app in an installer. No technical choice for the web version may conflict with it: the app works fully offline once loaded (code, parser and fonts bundled, no CDN at runtime; analytics and error reporting optional and fail silently), with relative asset paths. See [offline-version](../offline-version/issues/01-offline-version.md).
 
 ## Decisions so far
 
@@ -34,6 +35,7 @@ A finished spec for the first version: a tool the Membership manager runs to lis
 ## Out of scope
 
 - Saving a session between runs: the first version leaves no data behind; see [saved-session](../saved-session/issues/01-saved-session.md).
+- The offline version for Windows: see [offline-version](../offline-version/issues/01-offline-version.md).
 - Exception lists ("not expected in Spond Club").
 - Field-level differences between the two systems (e.g. mismatching phone numbers).
 - Distinguishing "removed from Spond Club" from "never in Spond Club" — both are Absent members.
