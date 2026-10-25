@@ -35,6 +35,17 @@ A finished spec for the first version: a tool the Membership manager runs to lis
 - [Analytics and error reporting in the first version?](issues/10-analytics.md): neither. No analytics, no automatic error reporting, no report link (a later feature: [error-reporting](../error-reporting/issues/01-error-reporting.md)). With no third-party origins, the CSP is strict (`default-src 'self'`, `connect-src 'none'`), so the browser itself blocks any upload; ADR 0001 amended.
 - [Which build tool produces the static web page?](issues/07-build-tool.md): Vite 8 with Vitest (the default for Svelte and Preact, with a GitHub Pages guide); SRI through a third-party plugin until Vite has it built in; CI type-checks separately; the CSP allowlist is kept by hand and checked by a CI test. Runner-up Rsbuild (built-in SRI).
 
+## Implementation tickets
+
+The spec is ready (2026-10-25) and broken into slices; each one is runnable and tested on its own:
+
+- [11 Project skeleton](issues/11-skeleton.md): Vite + Preact + CI + strict CSP + GitHub Pages. Its deploy step needs [17 Enable GitHub Pages](issues/17-enable-github-pages.md) (human).
+- [12 Matching engine](issues/12-matching.md), blocked by 11.
+- [13 Read the Spond Club export](issues/13-read-spond-club.md), blocked by 11. 12 and 13 can run in parallel.
+- [14 Read the KlubbAdmin export](issues/14-read-klubbadmin.md), blocked by 13.
+- [15 Drop zone and report](issues/15-drop-zone-and-report.md), blocked by 12 and 14.
+- [16 Norwegian/English and export instructions](issues/16-language-and-instructions.md), blocked by 15.
+
 ## Not yet specified
 
 Nothing. The last three points (data quality, which KlubbAdmin members are expected in Spond Club, coaches) were settled by grilling on 2026-10-25; see Notes.

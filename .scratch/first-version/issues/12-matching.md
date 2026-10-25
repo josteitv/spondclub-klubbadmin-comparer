@@ -1,0 +1,25 @@
+# Matching engine
+
+Type: task
+Status: ready-for-agent
+Blocked by: 11
+
+## What to build
+
+The matching rules from [04](04-matching.md) and [spec](../spec.md) "Matching" as pure TypeScript functions with no UI and no file reading. Input: two lists of people (`SpondClubMember`, `KlubbAdminMember`), each with first name, last name, birth date (optional) and group text (optional). Output: the four result groups.
+
+- `fullName`: first + last name, whitespace-joined; an empty field is skipped.
+- `normalise`: lower case, collapse whitespace, hyphen → space, strip accents with NFD while keeping æ/ø/å distinct, sort words alphabetically.
+- Exact match: normalised names equal, and the name occurs exactly once on each side.
+- Possible match, only among people without an exact match; a pair qualifies by one rule on its own:
+  - (a) missing words: every word of the shorter name is in the longer one, and the shorter name has ≥ 2 words;
+  - (b) typo: Levenshtein distance between normalised names ≤ 1 if the name has < 10 letters, else ≤ 2.
+- Names occurring more than once on either side are never exact matches; they go through the Possible-match rules with each other and with everyone else.
+- Possible-match pairs are grouped into connected sets, each pair with its reason (`missing-words`, `typo`, `same-name`).
+- Result: `{ foundInBoth, possibleMatches, unregisteredMembers, klubbAdminOnlyMembers }`. Every person ends up in exactly one group.
+
+## Acceptance criteria
+
+- [ ] Unit tests with invented names cover: identical names; case, extra spaces and hyphen-vs-space; word order; split between first and last name; é/ü stripped but ø ≠ o; a missing middle name; a one-word name not matching by rule (a); the < 10 / ≥ 10 letter typo thresholds; ø ↔ o and å ↔ aa as typos; duplicate names on one side and on both sides; one Spond Club member with two KlubbAdmin candidates; an empty first or last name; the combined case (missing word + typo), which is *not* a Possible match.
+- [ ] A property-style test: for random invented inputs, every person appears in exactly one result group.
+- [ ] No dependency on Preact or the file readers.

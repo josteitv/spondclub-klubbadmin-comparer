@@ -1,6 +1,6 @@
 # Spec: Spond Club–KlubbAdmin comparison, first version
 
-Status: needs-triage
+Status: ready-for-agent
 
 Built from the [map](map.md) and its resolved tickets 01–07. Vocabulary follows [GLOSSARY.md](../../GLOSSARY.md). Resolved tickets 03–06 say "Player", "Member" and "Absent member"; they mean Spond Club member, KlubbAdmin member and KlubbAdmin-only member.
 
