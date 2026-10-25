@@ -1,0 +1,433 @@
+<title>Medlemssjekk rapportskisse</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<!--
+  PROTOTYPE, throwaway (ticket .scratch/first-version/issues/06-report.md).
+  Three variants of the comparison report, switchable with the floating bar,
+  the arrow keys, or #a / #b / #c. All names and dates are invented.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: one centred working column; each variant owns its own structure below a shared header. */
+  :root {
+    --bg: #f4f6f3; --surface: #ffffff; --fg: #18201b; --muted: #5a645d; --line: #dce2db;
+    --accent: #1d6b57;
+    --possible: #8a5800; --possible-bg: #fcf1d9;
+    --unreg: #a63a26; --unreg-bg: #fae6e1;
+    --absent: #3f53a0; --absent-bg: #e7ebf8;
+    --match: #2f6b3a; --match-bg: #e3f1e5;
+    --hl: #ffd86b;
+    --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+    --font-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+    --font-data: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+    --bg: #111513; --surface: #1a201c; --fg: #e4eae5; --muted: #9ba59e; --line: #2d3530;
+    --accent: #5ec4a6;
+    --possible: #f2b955; --possible-bg: #382b11;
+    --unreg: #f28d77; --unreg-bg: #3b1d17;
+    --absent: #a2b1f2; --absent-bg: #1e2440;
+    --match: #86cf93; --match-bg: #19301d;
+    --hl: #7a5d10;
+    color-scheme: dark;
+  } }
+  :root[data-theme="dark"] {
+    --bg: #111513; --surface: #1a201c; --fg: #e4eae5; --muted: #9ba59e; --line: #2d3530;
+    --accent: #5ec4a6;
+    --possible: #f2b955; --possible-bg: #382b11;
+    --unreg: #f28d77; --unreg-bg: #3b1d17;
+    --absent: #a2b1f2; --absent-bg: #1e2440;
+    --match: #86cf93; --match-bg: #19301d;
+    --hl: #7a5d10;
+    color-scheme: dark;
+  }
+  body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 16px; line-height: 1.5; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 24px 120px; display: grid; gap: 24px; }
+  h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; line-height: 1.2; }
+  h1 { font-size: 1.75rem; }
+  h2 { font-size: 1.3rem; }
+  h3 { font-size: 1.05rem; }
+  p { margin: 0; }
+  .muted { color: var(--muted); }
+  .data { font-family: var(--font-data); font-size: 0.9em; font-variant-numeric: tabular-nums; }
+  .proto-note { font-size: 0.85rem; color: var(--muted); border: 1px dashed var(--line); border-radius: 6px; padding: 6px 10px; }
+  header.app { display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: baseline; justify-content: space-between; }
+  .files { display: flex; flex-wrap: wrap; gap: 8px; font-size: 0.85rem; color: var(--muted); }
+  .files span { background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 1px 10px; font-size: 0.8rem; font-weight: 700; white-space: nowrap; }
+  .chip.possible { color: var(--possible); background: var(--possible-bg); }
+  .chip.unreg { color: var(--unreg); background: var(--unreg-bg); }
+  .chip.absent { color: var(--absent); background: var(--absent-bg); }
+  .chip.match { color: var(--match); background: var(--match-bg); }
+  .scroll { overflow-x: auto; min-width: 0; }
+  table { border-collapse: collapse; width: 100%; background: var(--surface); }
+  th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); font-weight: 700; }
+  .missing { color: var(--muted); font-style: italic; }
+  .groups { max-width: 34ch; }
+  footer.reminder { font-size: 0.9rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 16px; }
+  button { font: inherit; cursor: pointer; }
+  button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  mark { background: var(--hl); color: inherit; border-radius: 2px; }
+
+  /* ---- Variant A: report ---- */
+  .summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+  .summary a { text-decoration: none; color: inherit; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: grid; gap: 2px; }
+  .summary .n { font-family: var(--font-display); font-size: 1.8rem; font-weight: 700; line-height: 1; }
+  .summary .possible .n { color: var(--possible); }
+  .summary .unreg .n { color: var(--unreg); }
+  .summary .absent .n { color: var(--absent); }
+  .summary .match .n { color: var(--match); }
+  .section { display: grid; gap: 10px; }
+  .section > header { display: grid; gap: 4px; }
+  .pair td.side { width: 50%; }
+  .pair .who { font-weight: 700; }
+  .pair .meta { font-size: 0.85rem; color: var(--muted); }
+  .why { font-size: 0.85rem; }
+
+  /* ---- Variant B: work list ---- */
+  .worklist { display: grid; grid-template-columns: 220px 1fr; gap: 20px; align-items: start; }
+  .tabs { display: grid; gap: 6px; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); }
+  .tabs button { display: flex; justify-content: space-between; align-items: center; gap: 8px; text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; color: var(--fg); }
+  .tabs button[aria-selected="true"] { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
+  .tabs .count { font-family: var(--font-data); font-size: 0.85rem; color: var(--muted); }
+  .items { display: grid; gap: 10px; min-width: 0; }
+  .item { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: grid; gap: 8px; }
+  .item.done { opacity: 0.55; }
+  .item .row { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: baseline; }
+  .item .name { font-weight: 700; font-size: 1.05rem; }
+  .item label { display: inline-flex; gap: 8px; align-items: center; font-size: 0.9rem; cursor: pointer; }
+  .cands { display: grid; gap: 6px; }
+  .cand { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; border-top: 1px dashed var(--line); padding-top: 8px; }
+  .cand .grow { flex: 1 1 220px; min-width: 0; }
+  .btn { border: 1px solid var(--line); background: var(--bg); color: var(--fg); border-radius: 6px; padding: 4px 10px; font-size: 0.85rem; }
+  .btn.yes { border-color: var(--match); color: var(--match); }
+  .btn.no { border-color: var(--unreg); color: var(--unreg); }
+  .decided { font-size: 0.85rem; font-weight: 700; }
+  .progress { height: 6px; background: var(--line); border-radius: 999px; overflow: hidden; }
+  .progress > div { height: 100%; background: var(--accent); }
+  @media (max-width: 720px) { .worklist { grid-template-columns: 1fr; } .tabs { position: static; grid-template-columns: 1fr; } }
+
+  /* ---- Variant C: side by side ---- */
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .filters button { border: 1px solid var(--line); background: var(--surface); color: var(--fg); border-radius: 999px; padding: 4px 12px; font-size: 0.85rem; }
+  .filters button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent); color: var(--surface); }
+  .diff { width: 100%; min-width: 640px; }
+  .diff th.sys { font-family: var(--font-display); text-transform: none; letter-spacing: 0; font-size: 1rem; color: var(--fg); }
+  .diff td.state { width: 1%; white-space: nowrap; }
+  .diff td.empty { background: repeating-linear-gradient(135deg, transparent 0 6px, var(--line) 6px 7px); }
+  .diff tr.possible td.state { box-shadow: inset 4px 0 0 var(--possible); }
+  .diff tr.unreg td.state { box-shadow: inset 4px 0 0 var(--unreg); }
+  .diff tr.absent td.state { box-shadow: inset 4px 0 0 var(--absent); }
+  .diff tr.match td.state { box-shadow: inset 4px 0 0 var(--match); }
+  .diff tr.match td { color: var(--muted); }
+  .diff tr.cont td { border-top: none; }
+  .diff .sub { font-size: 0.82rem; color: var(--muted); }
+  .togglerow td { text-align: center; background: var(--bg); }
+  .togglerow button { border: none; background: none; color: var(--accent); font-weight: 700; }
+
+  /* ---- prototype switcher (not part of the design) ---- */
+  .switcher { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 50; display: flex; align-items: center; gap: 4px; background: #111; color: #fff; border-radius: 999px; padding: 6px; box-shadow: 0 6px 20px rgba(0,0,0,0.35); font-family: system-ui, sans-serif; font-size: 0.9rem; max-width: calc(100vw - 32px); }
+  .switcher button { background: #2a2a2a; color: #fff; border: none; border-radius: 999px; width: 34px; height: 34px; }
+  .switcher span { padding: 0 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  @media (prefers-reduced-motion: no-preference) { .item { transition: opacity 0.2s; } }
+</style>
+
+<div class="wrap">
+  <header class="app">
+    <div>
+      <h1>Medlemssjekk</h1>
+      <p class="muted">Spond Club mot KlubbAdmin</p>
+    </div>
+    <div class="files">
+      <span>Spond Club: Medlemmer.xlsx</span>
+      <span>KlubbAdmin: Medlemmer_Eksport_….xlsx</span>
+    </div>
+  </header>
+  <p class="proto-note">Prototype med oppdiktede navn og datoer. Bytt variant med knappene nederst eller piltastene.</p>
+  <main id="view"></main>
+  <footer class="reminder">Ingen data er lagret. Når du lukker fanen, er alt borte. Husk å slette de nedlastede eksportfilene fra PC-en når du er ferdig.</footer>
+</div>
+
+<div class="switcher" role="toolbar" aria-label="Prototypevariant">
+  <button id="prev" aria-label="Forrige variant">←</button>
+  <span id="vlabel"></span>
+  <button id="next" aria-label="Neste variant">→</button>
+</div>
+
+<script>
+// ---------- invented data, already run through the matching rules in ticket 04 ----------
+const STATS = { players: 228, ignored: 39, members: 226, matched: 212, skipped: 1 };
+
+const POSSIBLE = [
+  { why: "Mellomnavn mangler",
+    players: [{ name: "Ola Nordmann", born: "14.03.2015", groups: "Fotball G10, Allidrett 2015" }],
+    members: [{ name: "Ola Johan Nordmann", born: "14.03.2015", groups: "Fotball|Allidrett" }] },
+  { why: "Skrivefeil (1 bokstav)",
+    players: [{ name: "Ingrid Haugland", born: "02.11.2014", groups: "Håndball J11" }],
+    members: [{ name: "Ingrid Hauglan", born: "02.11.2014", groups: "Håndball" }] },
+  { why: "Skrivefeil (ø / o)",
+    players: [{ name: "Sondre Bjørnstad", born: "27.06.2013", groups: "Ski, Fotball G12" }],
+    members: [{ name: "Sondre Bjornstad", born: "27.06.2013", groups: "Ski|Fotball" }] },
+  { why: "Samme navn flere ganger",
+    players: [{ name: "Emma Larsen", born: "09.01.2013", groups: "Turn" },
+              { name: "Emma Larsen", born: "30.08.2016", groups: "Allidrett 2016" }],
+    members: [{ name: "Emma Larsen", born: "30.08.2016", groups: "Allidrett" }] },
+  { why: "Navneledd mangler, to kandidater",
+    players: [{ name: "Nora Kristiansen Dahl", born: "", groups: "Fotball J12" }],
+    members: [{ name: "Nora Dahl", born: "18.05.2012", groups: "Fotball" },
+              { name: "Nora Kristiansen", born: "04.12.2012", groups: "Turn" }] },
+  { why: "Skrivefeil (1 bokstav)",
+    players: [{ name: "Jonas Lie", born: "21.02.2011", groups: "Fotball G13" }],
+    members: [{ name: "Jonas Lid", born: "21.02.2011", groups: "Fotball" }] },
+];
+
+const UNREG = [
+  { name: "Aksel Berg", born: "03.04.2016", groups: "Allidrett 2016" },
+  { name: "Elias Moe Strand", born: "11.09.2014", groups: "Fotball G10, Vintertrening, mandag og onsdag" },
+  { name: "Frida Holm", born: "", groups: "Håndball J11" },
+  { name: "Henrik Solberg", born: "25.12.2012", groups: "Ski" },
+  { name: "Ida Myhre", born: "07.07.2015", groups: "Turn, Allidrett 2015" },
+  { name: "Leah Ahmed", born: "16.02.2013", groups: "Fotball J12" },
+  { name: "Magnus Eide", born: "29.10.2011", groups: "" },
+  { name: "Sara Nilsen-Vik", born: "05.06.2016", groups: "Allidrett 2016" },
+  { name: "Tobias Rønning", born: "19.03.2014", groups: "Fotball G10, Ski" },
+];
+
+const ABSENT = [
+  { name: "Anders Kvam", born: "12.01.1979", groups: "" },
+  { name: "Hanna Lunde", born: "22.08.2010", groups: "Håndball" },
+  { name: "Kristoffer Aune", born: "14.04.2009", groups: "Fotball" },
+  { name: "Liv Sætre", born: "30.03.1985", groups: "" },
+  { name: "Marius Fjeld", born: "08.11.2012", groups: "Ski|Fotball" },
+  { name: "Selma Engen", born: "17.06.2014", groups: "Turn" },
+  { name: "Viktor Hagen", born: "01.02.2011", groups: "Fotball" },
+];
+
+const MATCHED_SAMPLE = [
+  ["Adam Andersen", "11.05.2014"], ["Amalie Bakke", "03.03.2013"], ["Emil Dahl", "24.09.2015"],
+  ["Filip Eriksen", "16.12.2012"], ["Hedda Fosse", "08.07.2014"], ["Isak Gundersen", "29.01.2016"],
+  ["Johanne Hansen", "13.10.2011"], ["Kasper Iversen", "05.05.2013"],
+];
+
+const nPossiblePlayers = POSSIBLE.reduce((n, p) => n + p.players.length, 0);
+const nPossibleMembers = POSSIBLE.reduce((n, p) => n + p.members.length, 0);
+
+// ---------- helpers ----------
+const esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const born = b => b ? `<span class="data">${b}</span>` : `<span class="missing">mangler</span>`;
+const groups = g => g ? esc(g) : `<span class="missing">ingen gruppe</span>`;
+const kaGroups = g => g ? esc(g.split("|").join(", ")) : `<span class="missing">ingen gruppe/gren</span>`;
+
+// Highlights letters in `a` that are not part of the longest common subsequence with `b` (case-insensitive).
+function diffMark(a, b) {
+  const x = a.toLowerCase(), y = b.toLowerCase();
+  const dp = Array.from({ length: x.length + 1 }, () => new Array(y.length + 1).fill(0));
+  for (let i = x.length - 1; i >= 0; i--)
+    for (let j = y.length - 1; j >= 0; j--)
+      dp[i][j] = x[i] === y[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+  let i = 0, j = 0, out = "";
+  while (i < x.length) {
+    if (j < y.length && x[i] === y[j]) { out += esc(a[i]); i++; j++; }
+    else if (j < y.length && dp[i][j + 1] >= dp[i + 1][j]) { j++; }
+    else { out += `<mark>${esc(a[i])}</mark>`; i++; }
+  }
+  return out.replace(/<\/mark><mark>/g, "");
+}
+
+// ---------- Variant A: one long report ----------
+function variantA() {
+  const pairRows = POSSIBLE.map(p => {
+    const side = (list, kaSide) => list.map(x => `<div><div class="who">${esc(x.name)}</div><div class="meta">Født ${born(x.born)} · ${kaSide ? kaGroups(x.groups) : groups(x.groups)}</div></div>`).join("");
+    return `<tr class="pair"><td class="side">${side(p.players, false)}</td><td class="side">${side(p.members, true)}</td><td><span class="chip possible why">${p.why}</span></td></tr>`;
+  }).join("");
+  const simpleRows = (list, ka) => list.map(x => `<tr><td><strong>${esc(x.name)}</strong></td><td>${born(x.born)}</td><td class="groups">${ka ? kaGroups(x.groups) : groups(x.groups)}</td></tr>`).join("");
+  return `
+  <div style="display:grid;gap:28px">
+    <nav class="summary" aria-label="Sammendrag">
+      <a class="unreg" href="#sec-unreg"><span class="n">${UNREG.length}</span><span>Ikke registrert i KlubbAdmin</span></a>
+      <a class="possible" href="#sec-possible"><span class="n">${POSSIBLE.length}</span><span>Mulige treff å sjekke</span></a>
+      <a class="absent" href="#sec-absent"><span class="n">${ABSENT.length}</span><span>Medlemmer ikke i Spond Club</span></a>
+      <a class="match" href="#sec-match"><span class="n">${STATS.matched}</span><span>Funnet i begge</span></a>
+    </nav>
+
+    <section class="section" id="sec-unreg">
+      <header><h2>Ikke registrert i KlubbAdmin</h2><p class="muted">Spillere i Spond Club uten treff i KlubbAdmin. Disse bør registreres.</p></header>
+      <div class="scroll"><table><thead><tr><th>Navn</th><th>Født</th><th>Grupper i Spond Club</th></tr></thead><tbody>${simpleRows(UNREG, false)}</tbody></table></div>
+    </section>
+
+    <section class="section" id="sec-possible">
+      <header><h2>Mulige treff</h2><p class="muted">Navnene ligner, men er ikke like. Sjekk om det er samme person.</p></header>
+      <div class="scroll"><table><thead><tr><th>Spond Club</th><th>KlubbAdmin</th><th>Hvorfor</th></tr></thead><tbody>${pairRows}</tbody></table></div>
+    </section>
+
+    <section class="section" id="sec-absent">
+      <header><h2>Medlemmer som ikke er i Spond Club</h2><p class="muted">Registrert i KlubbAdmin, men ikke funnet blant spillerne i Spond Club.</p></header>
+      <div class="scroll"><table><thead><tr><th>Navn</th><th>Født</th><th>Grupper/grener i KlubbAdmin</th></tr></thead><tbody>${simpleRows(ABSENT, true)}</tbody></table></div>
+    </section>
+
+    <section class="section" id="sec-match">
+      <header><h2>Funnet i begge</h2>
+      <p class="muted">Spillere med samme navn i begge systemer. Prototypen viser ${MATCHED_SAMPLE.length} av ${STATS.matched}.</p></header>
+      <div class="scroll"><table><thead><tr><th>Navn</th><th>Født i Spond Club</th><th>Født i KlubbAdmin</th><th>Grupper i Spond Club</th></tr></thead><tbody>${MATCHED_SAMPLE.map(([n, b]) => `<tr><td><strong>${esc(n)}</strong></td><td>${born(b)}</td><td>${born(b)}</td><td class="groups">Fotball G10</td></tr>`).join("")}</tbody></table></div>
+      <p class="muted">${STATS.ignored} rader i Spond Club med medlemstype «Ikke medlem» er ikke tatt med. ${STATS.skipped} rad uten navn er hoppet over.</p>
+    </section>
+  </div>`;
+}
+
+// ---------- Variant B: work list with decisions ----------
+const bState = { tab: "unreg", done: new Set(), decisions: {} };
+function variantB() {
+  const counts = { unreg: UNREG.length, possible: POSSIBLE.length, absent: ABSENT.length };
+  const total = counts.unreg + counts.possible + counts.absent;
+  const doneCount = bState.done.size + Object.keys(bState.decisions).length;
+  const tab = (key, label) => `<button role="tab" aria-selected="${bState.tab === key}" data-tab="${key}"><span>${label}</span><span class="chip ${key}">${counts[key]}</span></button>`;
+  let items = "";
+  if (bState.tab === "possible") {
+    items = POSSIBLE.map((p, pi) => {
+      const ps = p.players.map(x => `<div class="row"><span class="name">${esc(x.name)}</span><span class="muted">Spond Club · født ${born(x.born)} · ${groups(x.groups)}</span></div>`).join("");
+      const cs = p.members.map((m, mi) => {
+        const key = pi + ":" + mi, d = bState.decisions[key];
+        const action = d ? `<span class="decided" style="color:var(--${d === "same" ? "match" : "unreg"})">${d === "same" ? "Samme person" : "Ikke samme person"}</span> <button class="btn" data-undo="${key}">Angre</button>`
+                         : `<button class="btn yes" data-dec="${key}:same">Samme person</button><button class="btn no" data-dec="${key}:diff">Ikke samme</button>`;
+        return `<div class="cand"><div class="grow"><strong>${esc(m.name)}</strong> <span class="muted">KlubbAdmin · født ${born(m.born)} · ${kaGroups(m.groups)}</span></div>${action}</div>`;
+      }).join("");
+      const allDone = p.members.every((_, mi) => bState.decisions[pi + ":" + mi]);
+      return `<article class="item${allDone ? " done" : ""}"><span class="chip possible" style="justify-self:start">${p.why}</span>${ps}<div class="cands">${cs}</div></article>`;
+    }).join("");
+  } else {
+    const list = bState.tab === "unreg" ? UNREG : ABSENT;
+    const verb = bState.tab === "unreg" ? "Registrert i KlubbAdmin" : "Fulgt opp";
+    items = list.map((x, i) => {
+      const key = bState.tab + i, done = bState.done.has(key);
+      return `<article class="item${done ? " done" : ""}"><div class="row"><span class="name">${esc(x.name)}</span><span class="muted">født ${born(x.born)}</span></div>
+        <div class="muted">${bState.tab === "unreg" ? groups(x.groups) : kaGroups(x.groups)}</div>
+        <label><input type="checkbox" id="chk-${key}" data-done="${key}" ${done ? "checked" : ""}> ${verb}</label></article>`;
+    }).join("");
+  }
+  const intro = { unreg: "Spillere i Spond Club uten treff i KlubbAdmin. Kryss av etter hvert som du registrerer dem.",
+                  possible: "Navnene ligner. Avgjør om det er samme person. «Ikke samme» flytter spilleren til Ikke registrert.",
+                  absent: "Medlemmer i KlubbAdmin som ikke er spillere i Spond Club." }[bState.tab];
+  return `
+  <div style="display:grid;gap:16px">
+    <div style="display:grid;gap:6px"><div class="muted">${doneCount} av ${total} gjennomgått · ${STATS.matched} funnet i begge vises ikke</div><div class="progress"><div style="width:${Math.round(100 * doneCount / total)}%"></div></div></div>
+    <div class="worklist">
+      <nav class="tabs" role="tablist" aria-label="Kategorier">${tab("unreg", "Ikke registrert")}${tab("possible", "Mulige treff")}${tab("absent", "Ikke i Spond Club")}</nav>
+      <div class="items"><p class="muted">${intro}</p>${items}</div>
+    </div>
+    <p class="muted" style="font-size:0.85rem">Avkrysninger og avgjørelser forsvinner når fanen lukkes.</p>
+  </div>`;
+}
+function bindB(root) {
+  root.querySelectorAll("[data-tab]").forEach(b => b.onclick = () => { bState.tab = b.dataset.tab; render(); });
+  root.querySelectorAll("[data-done]").forEach(c => c.onchange = () => { c.checked ? bState.done.add(c.dataset.done) : bState.done.delete(c.dataset.done); render(); });
+  root.querySelectorAll("[data-dec]").forEach(b => b.onclick = () => { const [pi, mi, d] = b.dataset.dec.split(":"); bState.decisions[pi + ":" + mi] = d; render(); });
+  root.querySelectorAll("[data-undo]").forEach(b => b.onclick = () => { delete bState.decisions[b.dataset.undo]; render(); });
+}
+
+// ---------- Variant C: side-by-side diff, with match decisions ----------
+// decisions: "gi|pi|mi" -> "same" | "diff" for one candidate pair in POSSIBLE[gi].
+const cState = { show: new Set(["possible", "unreg", "absent", "match"]), decisions: {} };
+function pairState(gi, pi, mi) {
+  const d = cState.decisions;
+  const own = d[`${gi}|${pi}|${mi}`];
+  if (own) return own;
+  const p = POSSIBLE[gi];
+  // A person confirmed as someone else can't also be this candidate.
+  for (let a = 0; a < p.players.length; a++) for (let b = 0; b < p.members.length; b++)
+    if ((a === pi) !== (b === mi) && (a === pi || b === mi) && d[`${gi}|${a}|${b}`] === "same") return "diff";
+  return null;
+}
+function variantC() {
+  const rows = [];
+  const label = { possible: "Mulig treff", unreg: "Ikke registrert", absent: "Ikke i Spond Club", match: "Like" };
+  POSSIBLE.forEach((p, gi) => {
+    const pairs = [];
+    p.players.forEach((_, pi) => p.members.forEach((_, mi) => pairs.push({ pi, mi, s: pairState(gi, pi, mi) })));
+    if (pairs.some(x => !x.s)) {
+      // Still open: show the candidates side by side and the decision buttons under them.
+      const n = Math.max(p.players.length, p.members.length);
+      const other = (list, idx) => (list[idx] || list[0]).name;
+      for (let k = 0; k < n; k++) {
+        const pl = p.players[k], mb = p.members[k];
+        rows.push({ key: p.players[0].name.toLowerCase(), sub: k, state: "possible", cont: k > 0, why: k === 0 ? p.why : "",
+          left: pl && { ...pl, html: diffMark(pl.name, other(p.members, k)) },
+          right: mb && { ...mb, html: diffMark(mb.name, other(p.players, k)) } });
+      }
+      const many = pairs.length > 1;
+      const who = (x) => `${esc(x.name)}${many ? ` (${x.born || "født ?"})` : ""}`;
+      const decide = pairs.map(({ pi, mi, s }) => {
+        const k = `${gi}|${pi}|${mi}`;
+        const q = many ? `<span>${who(p.players[pi])} og ${who(p.members[mi])}:</span> ` : `<span>Er dette samme person?</span> `;
+        const act = s ? `<span class="decided" style="color:var(--${s === "same" ? "match" : "unreg"})">${s === "same" ? "Samme person" : "Ikke samme"}</span>${cState.decisions[k] ? ` <button class="btn" data-undo="${k}">Angre</button>` : ""}`
+                      : `<button class="btn yes" data-dec="${k}|same">Samme person</button> <button class="btn no" data-dec="${k}|diff">Ikke samme</button>`;
+        return `<div class="cand">${q}${act}</div>`;
+      }).join("");
+      rows.push({ key: p.players[0].name.toLowerCase(), sub: 99, state: "possible", cont: true, decide });
+    } else {
+      // Decided: confirmed pairs become matches; the rest fall back to their own side.
+      const undo = `<button class="btn" data-undo-group="${gi}">Angre</button>`;
+      pairs.filter(x => x.s === "same").forEach(({ pi, mi }) => rows.push({ key: p.players[pi].name.toLowerCase(), state: "match", note: "Bekreftet av deg", undo,
+        left: { ...p.players[pi], html: esc(p.players[pi].name) }, right: { ...p.members[mi], html: esc(p.members[mi].name) } }));
+      p.players.forEach((x, pi) => { if (!pairs.some(q => q.pi === pi && q.s === "same")) rows.push({ key: x.name.toLowerCase(), state: "unreg", note: "Avvist som mulig treff", undo, left: { ...x, html: esc(x.name) } }); });
+      p.members.forEach((x, mi) => { if (!pairs.some(q => q.mi === mi && q.s === "same")) rows.push({ key: x.name.toLowerCase(), state: "absent", note: "Avvist som mulig treff", undo, right: { ...x, html: esc(x.name) } }); });
+    }
+  });
+  UNREG.forEach(x => rows.push({ key: x.name.toLowerCase(), state: "unreg", left: { ...x, html: esc(x.name) } }));
+  ABSENT.forEach(x => rows.push({ key: x.name.toLowerCase(), state: "absent", right: { ...x, html: esc(x.name) } }));
+  MATCHED_SAMPLE.forEach(([n, b]) => rows.push({ key: n.toLowerCase(), state: "match", left: { name: n, born: b, groups: "Fotball G10", html: esc(n) }, right: { name: n, born: b, groups: "Fotball", html: esc(n) } }));
+  rows.sort((a, b) => a.key.localeCompare(b.key, "nb") || (a.sub || 0) - (b.sub || 0));
+
+  const count = s => s === "possible" ? POSSIBLE.filter((p, gi) => p.players.some((_, pi) => p.members.some((_, mi) => !pairState(gi, pi, mi)))).length
+                                      : rows.filter(r => r.state === s && !r.cont).length + (s === "match" ? STATS.matched - MATCHED_SAMPLE.length : 0);
+  const cell = (x, ka) => x ? `<td><div>${x.html}</div><div class="sub">født ${born(x.born)} · ${ka ? kaGroups(x.groups) : groups(x.groups)}</div></td>` : `<td class="empty" aria-label="Ikke funnet"></td>`;
+  let body = rows.filter(r => cState.show.has(r.state)).map(r => r.decide
+    ? `<tr class="possible cont"><td class="state"></td><td colspan="2"><div class="cands">${r.decide}</div></td></tr>`
+    : `<tr class="${r.state}${r.cont ? " cont" : ""}"><td class="state">${r.cont ? "" : `<span class="chip ${r.state}">${label[r.state]}</span>${r.why || r.note ? `<div class="sub" style="margin-top:4px">${r.why || r.note}</div>` : ""}${r.undo ? `<div style="margin-top:4px">${r.undo}</div>` : ""}`}</td>${cell(r.left, false)}${cell(r.right, true)}</tr>`).join("");
+  if (cState.show.has("match")) body += `<tr class="togglerow"><td colspan="3" class="muted">Prototypen viser bare ${MATCHED_SAMPLE.length} av de ${STATS.matched} like navnene.</td></tr>`;
+  const f = key => `<button aria-pressed="${cState.show.has(key)}" data-filter="${key}">${label[key]} · ${count(key)}</button>`;
+  return `
+  <div style="display:grid;gap:14px">
+    <div class="filters"><span class="muted">Vis:</span>${f("unreg")}${f("possible")}${f("absent")}${f("match")}</div>
+    <div class="scroll"><table class="diff"><thead><tr><th></th><th class="sys">Spond Club <span class="muted" style="font-weight:400;font-size:0.85rem">${STATS.players} spillere</span></th><th class="sys">KlubbAdmin <span class="muted" style="font-weight:400;font-size:0.85rem">${STATS.members} medlemmer</span></th></tr></thead><tbody>${body}</tbody></table></div>
+    <p class="muted" style="font-size:0.85rem">Sortert alfabetisk. Markerte bokstaver er forskjellen mellom navnene. Avgjørelsene dine forsvinner når fanen lukkes. ${STATS.ignored} rader med «Ikke medlem» og ${STATS.skipped} rad uten navn er ikke tatt med.</p>
+  </div>`;
+}
+function bindC(root) {
+  root.querySelectorAll("[data-filter]").forEach(b => b.onclick = () => { const k = b.dataset.filter; cState.show.has(k) ? cState.show.delete(k) : cState.show.add(k); render(); });
+  root.querySelectorAll("[data-dec]").forEach(b => b.onclick = () => { const [gi, pi, mi, d] = b.dataset.dec.split("|"); cState.decisions[`${gi}|${pi}|${mi}`] = d; render(); });
+  root.querySelectorAll("[data-undo]").forEach(b => b.onclick = () => { delete cState.decisions[b.dataset.undo]; render(); });
+  root.querySelectorAll("[data-undo-group]").forEach(b => b.onclick = () => { const g = b.dataset.undoGroup + "|"; Object.keys(cState.decisions).forEach(k => { if (k.startsWith(g)) delete cState.decisions[k]; }); render(); });
+}
+
+// ---------- switcher ----------
+const VARIANTS = [
+  { key: "a", name: "Rapport", render: variantA },
+  { key: "b", name: "Arbeidsliste", render: variantB, bind: bindB },
+  { key: "c", name: "Side om side", render: variantC, bind: bindC },
+];
+let current = Math.max(0, VARIANTS.findIndex(v => v.key === location.hash.slice(1)));
+function render() {
+  const v = VARIANTS[current], root = document.getElementById("view");
+  const y = window.scrollY;
+  root.innerHTML = v.render();
+  if (v.bind) v.bind(root);
+  document.getElementById("vlabel").textContent = `${v.key.toUpperCase()} (${v.name})`;
+  window.scrollTo(0, y);
+}
+function go(d) {
+  current = (current + d + VARIANTS.length) % VARIANTS.length;
+  try { history.replaceState(null, "", "#" + VARIANTS[current].key); } catch (e) {}
+  window.scrollTo(0, 0);
+  render();
+}
+document.getElementById("prev").onclick = () => go(-1);
+document.getElementById("next").onclick = () => go(1);
+document.addEventListener("keydown", e => {
+  const t = e.target;
+  if (t.closest && t.closest("input, textarea, [contenteditable]")) return;
+  if (e.key === "ArrowLeft") go(-1);
+  if (e.key === "ArrowRight") go(1);
+});
+render();
+</script>
