@@ -14,10 +14,12 @@ Chosen layout: **one report page, read top to bottom** (variant A of the prototy
 
 - **Summary at the top:** one count per section, each linking to its section.
 - **Sections, in this order:**
-  1. **Unregistered players:** name, birth date and the Spond Club group cell.
+  1. **Unregistered players:** name, birth date and the Spond Club group cell. A hint says: "Hvis personen ikke skal være medlem av klubben, endre medlemstypen til «Ikke medlem» i Spond Club."
   2. **Possible matches:** a table with the Spond Club person or people next to the KlubbAdmin candidate or candidates, and the reason (missing middle name, typo, same name more than once, …). Birth date and groups are shown on both sides.
-  3. **Absent members:** name, birth date and the KlubbAdmin grupper/grener.
-  4. **Found in both:** every Player with an exact match is listed, with name, birth date from each system and the Spond Club group cell.
+  3. **Found in both:** every Player with an exact match is listed, with name, birth date from each system and the Spond Club group cell.
+  4. **Absent members**, titled "Medlemmer i KlubbAdmin som ikke er i Spond Club": every Absent member, with no filter on gruppe/gren, with name, birth date and the KlubbAdmin grupper/grener.
+
+  (Order and hint changed by grilling on 2026-10-25, after the prototype; the prototype still shows Absent members third.)
 - **Bottom of the report:** how many `Ikke medlem` rows were left out and how many rows without a name were skipped.
 - **Missing values** show as "mangler" (birth date) or "ingen gruppe" (group).
 - **Reminder:** a footer reminds the Membership manager to delete the downloaded exports.

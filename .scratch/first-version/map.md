@@ -2,7 +2,7 @@
 
 ## Destination
 
-A finished spec for the first version: a tool the Membership manager runs to list Unregistered players (Spond Club → KlubbAdmin), Possible matches, and a simple list of Absent members. Ready to hand to `/to-spec`.
+A finished spec for the first version: a tool the Membership manager runs to list Unregistered players (Spond Club → KlubbAdmin), Possible matches, and a simple list of Absent members. The spec is [spec.md](spec.md).
 
 ## Notes
 
@@ -14,6 +14,9 @@ A finished spec for the first version: a tool the Membership manager runs to lis
 - Only Players count from Spond Club: active members with member type `Medlem` (not `Ikke medlem`), not Guardians. Their groups come from the `Grupper` column of the Spond Club export (confirmed in 03).
 - One run covers the whole club; each Player appears once. Their groups are shown as the Spond Club `Grupper` cell, unsplit (some group names contain the `", "` separator), so the result is not grouped by Spond group.
 - No exception list in the first version.
+- Every `Medlem` row is a Player, whatever the person's age or role (adult athletes, coaches, parents). Someone who shouldn't be a club member is changed to `Ikke medlem` in Spond Club; the report says so in the Unregistered players section. (Grilled 2026-10-25.)
+- All Absent members are listed, with no filter on gruppe/gren, as the last section of the report: "Medlemmer i KlubbAdmin som ikke er i Spond Club". (Grilled 2026-10-25.)
+- No separate data-quality checks: duplicate names go to Possible matches, missing birth dates show as "mangler", rows without a name are skipped and counted, and Guardians who are also `Medlem` rows are Players. (Grilled 2026-10-25.)
 - Matching compares full name only (Player in Spond Club vs Member in KlubbAdmin). Identical names after normalisation are a match; close names (e.g. missing middle name, typo) are shown as Possible matches for the Membership manager to judge. Birth date and group are shown in the result when available, for viewing only, never compared. No registration fields are shown. The name rule is in [04](issues/04-matching.md).
 - A future offline version for Windows packages the same app in an installer. No technical choice for the web version may conflict with it: the app works fully offline once loaded (code, parser and fonts bundled, no CDN at runtime; analytics and error reporting optional and fail silently), with relative asset paths. See [offline-version](../offline-version/issues/01-offline-version.md).
 
@@ -26,14 +29,12 @@ A finished spec for the first version: a tool the Membership manager runs to lis
 - [How will the Membership manager run the tool?](issues/05-how-to-run.md): a static web page on GitHub Pages (own domain later) that reads and compares the exports in the browser; export data never leaves the browser, enforced by a CSP allowlist, SRI and a single scrubbed choke point for analytics/error reports ([ADR 0001](../../docs/adr/0001-browser-only-static-web-page.md)); stores nothing; NO/EN interface; rejects unknown export formats; TypeScript, build tool decided in [07](issues/07-build-tool.md); public repo, MIT.
 - [Get sample exports from Spond Club and KlubbAdmin](issues/03-sample-exports.md): both exports are one sheet with one header row. Spond Club has one row per member, with Guardians as nested columns, dates as Excel serials and groups in one unsplittable `Grupper` cell. KlubbAdmin has all-text cells with `dd.mm.yyyy` dates, PersonId, and `|`-joined grupper/grener. Players are `Medlemstype = Medlem` rows. The 3-Member KlubbAdmin sample is the accepted basis for the first version.
 - [How do we recognise the same person in both systems?](issues/04-matching.md): full name only (first + last, word order, case, spaces, hyphens and accents ignored; æ/ø/å kept). Exact match only when the name is unique on both sides. Otherwise Possible match by missing words (shorter name ≥ 2 words) or Levenshtein ≤ 1 (< 10 letters) / ≤ 2, one rule at a time. Levenshtein alone was rejected because missing middle names are common.
-- [What does the report look like?](issues/06-report.md): one read-only page, read top to bottom. A summary of counts comes first, then Unregistered players, Possible matches (side by side with reason), Absent members and everyone Found in both, each with name, birth date and group. No decisions or checkboxes. The prototype is on branch `prototype/report`.
+- [What does the report look like?](issues/06-report.md): one read-only page, read top to bottom. A summary of counts comes first, then Unregistered players, Possible matches (side by side with reason), everyone Found in both and, last, Absent members, each with name, birth date and group. No decisions or checkboxes. The prototype is on branch `prototype/report`.
 - [Which build tool produces the static web page?](issues/07-build-tool.md): Vite 8 with Vitest (the default for Svelte and Preact, with a GitHub Pages guide); SRI through a third-party plugin until Vite has it built in; CI type-checks separately; the CSP allowlist is kept by hand and checked by a CI test. Runner-up Rsbuild (built-in SRI).
 
 ## Not yet specified
 
-- Spond Club data quality: duplicate Players, Guardians registered as Players, Players without birth date.
-- Which Members are expected in Spond Club at all — without a rule, supporting/board/parent members flood the Absent members list. KlubbAdmin has no membership-type field, only member vs active-in-gren and free-text kontingent names; the rule likely hangs on gren registration.
-- Whether coaches/team leaders must also be Members.
+Nothing. The last three points (data quality, which Members are expected in Spond Club, coaches) were settled by grilling on 2026-10-25; see Notes.
 
 ## Out of scope
 
