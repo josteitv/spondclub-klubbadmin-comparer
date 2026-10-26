@@ -71,6 +71,11 @@ describe('matchMembers', () => {
     ['2 typos where only the other name has 10 letters', person('Kari', 'Hanse'), person('Kari', 'Hanssen'), false],
     ['ø written as o', person('Ole', 'Bø'), person('Ole', 'Bo'), true],
     ['å written as aa', person('Håkon', 'Nordmann'), person('Haakon', 'Nordmann'), true],
+    ['å written as aa at the start of a short name', person('Ole', 'Ås'), person('Ole', 'Aas'), true],
+    ['å written as aa plus 1 typo', person('Ole', 'Ås'), person('Ola', 'Aas'), true],
+    ['å written as aa plus 2 typos in a short name', person('Ole', 'Ås'), person('Ali', 'Aas'), false],
+    ['æ written as ae', person('Ole', 'Bæk'), person('Ole', 'Baek'), true],
+    ['ø written as o plus 1 typo', person('Bjørn', 'Bø'), person('Bjorn', 'Bu'), true],
     ['a missing middle name plus a typo', person('Ola Johan', 'Nordmann'), person('Ola', 'Nordman'), false],
   ])('typo rule: %s', (_, spond, klubbAdmin, isPossibleMatch) => {
     const pairs = matchMembers([spond], [klubbAdmin]).possibleMatches.flatMap((set) => set.pairs)

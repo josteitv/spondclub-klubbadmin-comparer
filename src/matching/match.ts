@@ -70,9 +70,13 @@ function possibleMatchReason(a: string, b: string): PossibleMatchReason | undefi
   if (shorter.length >= 2 && shorter.every((word) => longer.includes(word))) return 'missing-words'
   // The shorter name sets the limit, so the stricter one applies.
   const maxTypos = Math.min(letterCount(a), letterCount(b)) < 10 ? 1 : 2
-  if (levenshtein(a, b) <= maxTypos) return 'typo'
+  if (levenshtein(transliterate(a), transliterate(b)) <= maxTypos) return 'typo'
   return undefined
 }
+
+/** å → aa, æ → ae, ø → o, words re-sorted: these spellings are not typos. */
+const transliterate = (name: string) =>
+  name.replaceAll('å', 'aa').replaceAll('æ', 'ae').replaceAll('ø', 'o').split(' ').sort().join(' ')
 
 function findPossibleMatches(spondClub: SpondClubMember[], klubbAdmin: KlubbAdminMember[]): PossibleMatchPair[] {
   const pairs: PossibleMatchPair[] = []

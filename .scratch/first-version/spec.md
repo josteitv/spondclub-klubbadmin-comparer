@@ -76,7 +76,7 @@ See [04](issues/04-matching.md). Only names are compared. Birth date and groups 
 3. **Exact match:** names identical after normalisation, *and* the name occurs exactly once among the Spond Club members and exactly once among the KlubbAdmin members. A name that occurs more than once on either side is never matched automatically.
 4. **Possible match:** only among people without an exact match. A pair is a Possible match if it meets one of these rules on its own:
    - **(a) Missing words:** every word of the shorter name is in the longer name, and the shorter name has at least 2 words.
-   - **(b) Typo:** the Levenshtein distance between the normalised full names, with words sorted alphabetically, is ≤ 1 if the name has fewer than 10 letters, otherwise ≤ 2.
+   - **(b) Typo:** the Levenshtein distance between the normalised full names, with words sorted alphabetically, is ≤ 1 if the name has fewer than 10 letters, otherwise ≤ 2. The shorter name's letter count sets the limit. Before measuring, å → aa, æ → ae and ø → o (then words are re-sorted), so these spellings cost nothing: "Ole Ås" ↔ "Ola Aas" is 1 typo. (Changed 2026-10-26; previously each counted as typos, which missed short names and å at the start of a word.)
 
    Same-name duplicates from step 3 are Possible matches with each other. A person can have several candidates. Possible-match pairs are grouped into connected sets for display, with the reason for each pair.
 5. **Groups in the result:** every Spond Club member and every KlubbAdmin member ends up in exactly one of:
