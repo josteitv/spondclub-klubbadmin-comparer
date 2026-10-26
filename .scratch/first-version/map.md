@@ -40,7 +40,7 @@ A finished spec for the first version: a tool the Membership manager runs to lis
 The spec is ready (2026-10-25) and broken into slices; each one is runnable and tested on its own:
 
 - [11 Project skeleton](issues/11-skeleton.md) (done, live at https://josteitv.github.io/spondclub-klubbadmin-comparer/): Vite + Preact + CI + strict CSP + GitHub Pages. Its deploy step needs [17 Enable GitHub Pages](issues/17-enable-github-pages.md) (human).
-- [12 Matching engine](issues/12-matching.md), blocked by 11.
+- [12 Matching engine](issues/12-matching.md) (done): `matchMembers` in `src/matching/match.ts`.
 - [13 Read the Spond Club export](issues/13-read-spond-club.md), blocked by 11. 12 and 13 can run in parallel.
 - [14 Read the KlubbAdmin export](issues/14-read-klubbadmin.md), blocked by 13.
 - [15 Drop zone and report](issues/15-drop-zone-and-report.md), blocked by 12 and 14.

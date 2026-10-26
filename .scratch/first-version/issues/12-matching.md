@@ -1,7 +1,7 @@
 # Matching engine
 
 Type: task
-Status: ready-for-agent
+Status: resolved
 Blocked by: 11
 
 ## What to build
@@ -20,6 +20,10 @@ The matching rules from [04](04-matching.md) and [spec](../spec.md) "Matching" a
 
 ## Acceptance criteria
 
-- [ ] Unit tests with invented names cover: identical names; case, extra spaces and hyphen-vs-space; word order; split between first and last name; é/ü stripped but ø ≠ o; a missing middle name; a one-word name not matching by rule (a); the < 10 / ≥ 10 letter typo thresholds; ø ↔ o and å ↔ aa as typos; duplicate names on one side and on both sides; one Spond Club member with two KlubbAdmin candidates; an empty first or last name; the combined case (missing word + typo), which is *not* a Possible match.
-- [ ] A property-style test: for random invented inputs, every person appears in exactly one result group.
-- [ ] No dependency on Preact or the file readers.
+- [x] Unit tests with invented names cover: identical names; case, extra spaces and hyphen-vs-space; word order; split between first and last name; é/ü stripped but ø ≠ o; a missing middle name; a one-word name not matching by rule (a); the < 10 / ≥ 10 letter typo thresholds; ø ↔ o and å ↔ aa as typos; duplicate names on one side and on both sides; one Spond Club member with two KlubbAdmin candidates; an empty first or last name; the combined case (missing word + typo), which is *not* a Possible match.
+- [x] A property-style test: for random invented inputs, every person appears in exactly one result group.
+- [x] No dependency on Preact or the file readers.
+
+## Comments
+
+- 2026-10-26, agent: done in `src/matching/match.ts` (`matchMembers`, no imports), tested at that one seam in `src/matching/match.test.ts` (30 tests, including a seeded random test that fails if merging connected sets is broken). Two interpretations, confirmed by the user: the typo limit uses the *shorter* name's letter count (the stricter limit), and `same-name` pairs are only across systems, so two Spond Club members with the same name and no KlubbAdmin counterpart are both Unregistered members. Known limitation of the spec's rule: words are sorted before the typo distance, so å ↔ aa at the *start* of a word can move it ("Ole Ås" vs "Ole Aas" sort differently) and the names are not a Possible match; mid-word cases like "Håkon" ↔ "Haakon" in a name of 10+ letters work.
