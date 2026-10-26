@@ -1,0 +1,107 @@
+// The only module that reads export files, and the only one that imports read-excel-file (ticket 08),
+// so the parser can be swapped without touching the rest.
+import {
+  InvalidInputError,
+  InvalidSpreadsheetError,
+  readSheet,
+  SheetNotFoundError,
+  type Row,
+} from 'read-excel-file/universal'
+import type { SpondClubMember } from '../matching/match.ts'
+
+/** Why a file was rejected. `code` is also the key of its message in the interface. */
+export type ExportError =
+  | { code: 'not-xlsx' }
+  | { code: 'empty-sheet' }
+  | { code: 'missing-columns'; columns: string[] }
+
+export type Result<T> = { ok: true; value: T } | { ok: false; error: ExportError }
+
+export interface SpondClubExport {
+  members: SpondClubMember[]
+  notMemberCount: number
+  skippedWithoutName: number
+}
+
+const SPOND_CLUB_COLUMNS = {
+  memberType: 'Medlemstype',
+  firstName: 'Medlem fornavn',
+  lastName: 'Medlem etternavn',
+  birthDate: 'Fødselsdato',
+  groups: 'Grupper',
+} as const
+
+type Columns = Record<string, string>
+type CellOf<C extends Columns> = (row: Row, key: keyof C) => unknown
+
+interface Sheet {
+  header: string[]
+  rows: Row[]
+}
+
+async function readFirstSheet(file: Blob): Promise<Result<Sheet>> {
+  let data: Row[]
+  try {
+    data = await readSheet(file)
+  } catch (error) {
+    if (error instanceof InvalidInputError || error instanceof InvalidSpreadsheetError || error instanceof SheetNotFoundError) {
+      return { ok: false, error: { code: 'not-xlsx' } }
+    }
+    throw error
+  }
+  const [header, ...rows] = data
+  if (!header) return { ok: false, error: { code: 'empty-sheet' } }
+  return { ok: true, value: { header: header.map(text), rows } }
+}
+
+/** Finds each required column by its header title; never guesses. */
+function locateColumns<C extends Columns>(header: string[], columns: C): Result<CellOf<C>> {
+  const missing = Object.values(columns).filter((title) => !header.includes(title))
+  if (missing.length > 0) return { ok: false, error: { code: 'missing-columns', columns: missing } }
+  const index = Object.fromEntries(Object.entries(columns).map(([key, title]) => [key, header.indexOf(title)]))
+  return { ok: true, value: (row, key) => row[index[key as string]] }
+}
+
+const text = (value: unknown) => (typeof value === 'string' ? value.trim() : '')
+
+export type ExportKind = 'spond-club'
+
+/** Tells which export a file is from its header row alone. */
+export async function identifyExport(file: Blob): Promise<Result<ExportKind>> {
+  const sheet = await readFirstSheet(file)
+  if (!sheet.ok) return sheet
+  const located = locateColumns(sheet.value.header, SPOND_CLUB_COLUMNS)
+  if (!located.ok) return located
+  return { ok: true, value: 'spond-club' }
+}
+
+export async function readSpondClubExport(file: Blob): Promise<Result<SpondClubExport>> {
+  const sheet = await readFirstSheet(file)
+  if (!sheet.ok) return sheet
+  const located = locateColumns(sheet.value.header, SPOND_CLUB_COLUMNS)
+  if (!located.ok) return located
+  const cell = located.value
+
+  const members: SpondClubMember[] = []
+  let notMemberCount = 0
+  let skippedWithoutName = 0
+  for (const row of sheet.value.rows) {
+    // Only `Medlem` rows are Spond Club members; `Ikke medlem` rows are left out but counted.
+    if (text(cell(row, 'memberType')) !== 'Medlem') {
+      notMemberCount++
+      continue
+    }
+    const member: SpondClubMember = { firstName: text(cell(row, 'firstName')), lastName: text(cell(row, 'lastName')) }
+    if (!member.firstName && !member.lastName) {
+      skippedWithoutName++
+      continue
+    }
+    // A date serial with a date format comes back as a Date at UTC midnight.
+    const birthDate = cell(row, 'birthDate')
+    if (birthDate instanceof Date) member.birthDate = birthDate
+    const groups = text(cell(row, 'groups'))
+    if (groups) member.groups = groups
+    members.push(member)
+  }
+  return { ok: true, value: { members, notMemberCount, skippedWithoutName } }
+}

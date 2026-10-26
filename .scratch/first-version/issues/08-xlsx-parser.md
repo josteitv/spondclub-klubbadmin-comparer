@@ -21,3 +21,7 @@ Which library should the static, browser-only web page bundle to read the Spond 
   - `xlsx-populate`, HyperFormula, and republished copies of SheetJS.
 
 Details: [../research/xlsx-parser.md](../research/xlsx-parser.md)
+
+## Comments
+
+- 2026-10-26, agent (ticket 13): Open item 1 was wrong. In 9.3.12 `/universal` unzips with fflate's async `unzip()` (`modules/zip/unzipFromArrayBuffer.js`), not `unzipSync`; entries over 512 KiB go to a `blob:` worker, which the page CSP blocks, and the read hangs. `unzipFromArrayBufferSync.js` exists but nothing uses it, and it is broken. Worked around in 13 with a Vite plugin that gives read-excel-file a synchronous fflate `unzip()`; see [13](13-read-spond-club.md). The decision to use read-excel-file stands; the hand-rolled parser remains the fallback.

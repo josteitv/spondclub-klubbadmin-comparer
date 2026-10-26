@@ -17,6 +17,8 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
+      # The browser tests run in Chromium and Firefox.
+      - run: npx playwright install --with-deps chromium firefox
       - run: npm run typecheck
       - run: npm test
       - run: npm run build
