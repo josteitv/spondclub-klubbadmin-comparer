@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { identifyExport, readSpondClubExport } from './read-export.ts'
-import { SPOND_CLUB_COLUMNS, spondClubFile, xlsxFile } from './test-files.ts'
+import { identifyExport, readKlubbAdminExport, readSpondClubExport } from './read-export.ts'
+import { KLUBBADMIN_COLUMNS, klubbAdminFile, SPOND_CLUB_COLUMNS, spondClubFile, xlsxFile } from './test-files.ts'
 
 describe('readSpondClubExport', () => {
   it('reads the Spond Club members', async () => {
@@ -113,15 +113,105 @@ describe('identifyExport', () => {
     expect(await identifyExport(file)).toEqual({ ok: true, value: 'spond-club' })
   })
 
-  it('rejects an .xlsx with other columns, naming what is missing', async () => {
-    const file = await xlsxFile(['Navn', 'Fødselsdato'], [{ Navn: 'Ola Nordmann' }])
+  it('recognises a KlubbAdmin export from its header row', async () => {
+    const file = await klubbAdminFile([{ Fornavn: 'Ola', Etternavn: 'Nordmann' }])
+    expect(await identifyExport(file)).toEqual({ ok: true, value: 'klubbadmin' })
+  })
+
+  it('rejects an .xlsx with other columns, naming what is missing for each export', async () => {
+    const file = await xlsxFile(['Navn', 'Fødselsdato', 'Grupper'], [{ Navn: 'Ola Nordmann' }])
     expect(await identifyExport(file)).toEqual({
       ok: false,
-      error: { code: 'missing-columns', columns: ['Medlemstype', 'Medlem fornavn', 'Medlem etternavn', 'Grupper'] },
+      error: {
+        code: 'unrecognised',
+        missing: {
+          spondClub: ['Medlemstype', 'Medlem fornavn', 'Medlem etternavn'],
+          klubbAdmin: ['Fornavn', 'Etternavn', 'Grupper/grener'],
+        },
+      },
     })
   })
 
   it('rejects a file that is not an .xlsx', async () => {
     expect(await identifyExport(new Blob(['not a spreadsheet']))).toEqual({ ok: false, error: { code: 'not-xlsx' } })
   })
+})
+
+describe('readKlubbAdminExport', () => {
+  it('reads the KlubbAdmin members, with text birth dates and |-joined groups', async () => {
+    const file = await klubbAdminFile([
+      {
+        PersonId: '1234567',
+        Fornavn: 'Ola',
+        Etternavn: 'Nordmann',
+        Fødselsdato: '04.03.2012',
+        'Grupper/grener': 'Fotball|Allidrett',
+      },
+    ])
+
+    expect(await readKlubbAdminExport(file)).toEqual({
+      ok: true,
+      value: {
+        members: [
+          {
+            firstName: 'Ola',
+            lastName: 'Nordmann',
+            birthDate: new Date('2012-03-04T00:00:00Z'),
+            groups: 'Fotball, Allidrett',
+          },
+        ],
+        skippedWithoutName: 0,
+      },
+    })
+  })
+  it.each([
+    ['an impossible date', '31.02.2012'],
+    ['a month out of range', '04.13.2012'],
+    ['text that is not a date', 'ukjent'],
+    ['another date format', '2012-03-04'],
+    ['a blank cell', '  '],
+  ])('treats %s as a missing birth date', async (_, Fødselsdato) => {
+    const file = await klubbAdminFile([{ Fornavn: 'Ola', Etternavn: 'Nordmann', Fødselsdato }])
+
+    const result = await readKlubbAdminExport(file)
+
+    expect(result).toMatchObject({ ok: true, value: { members: [{ firstName: 'Ola' }] } })
+    expect(result.ok && result.value.members[0]).not.toHaveProperty('birthDate')
+  })
+  it('reads a number stored in a text-formatted cell as text', async () => {
+    const file = await klubbAdminFile([{ PersonId: 1234567, Fornavn: 'Ola', Etternavn: 2012 }])
+
+    expect(await readKlubbAdminExport(file)).toMatchObject({
+      ok: true,
+      value: { members: [{ firstName: 'Ola', lastName: '2012' }] },
+    })
+  })
+
+  it('skips and counts rows without a name, and ignores a trailing empty row', async () => {
+    const empty = Object.fromEntries(KLUBBADMIN_COLUMNS.map((column) => [column, '']))
+    const file = await klubbAdminFile([
+      { PersonId: 1234567, Fødselsdato: '04.03.2012', 'Tlf. mobil': '40000000' },
+      { Fornavn: 'Ola', Etternavn: 'Nordmann', 'Tlf. mobil': '40000001', 'E-post': 'a@example.com;b@example.com' },
+      empty,
+    ])
+
+    expect(await readKlubbAdminExport(file)).toEqual({
+      ok: true,
+      value: { members: [{ firstName: 'Ola', lastName: 'Nordmann' }], skippedWithoutName: 1 },
+    })
+  })
+  it.each(['Fornavn', 'Etternavn', 'Fødselsdato', 'Grupper/grener'])(
+    'rejects a file without the %s column, naming it',
+    async (missing) => {
+      const file = await klubbAdminFile(
+        [{ Fornavn: 'Ola', Etternavn: 'Nordmann' }],
+        KLUBBADMIN_COLUMNS.filter((column) => column !== missing),
+      )
+
+      expect(await readKlubbAdminExport(file)).toEqual({
+        ok: false,
+        error: { code: 'missing-columns', columns: [missing] },
+      })
+    },
+  )
 })

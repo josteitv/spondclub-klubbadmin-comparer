@@ -7,15 +7,19 @@ import {
   SheetNotFoundError,
   type Row,
 } from 'read-excel-file/universal'
-import type { SpondClubMember } from '../matching/match.ts'
+import type { KlubbAdminMember, SpondClubMember } from '../matching/match.ts'
 
 /** Why a file was rejected. `code` is also the key of its message in the interface. */
 export type ExportError =
   | { code: 'not-xlsx' }
   | { code: 'empty-sheet' }
   | { code: 'missing-columns'; columns: string[] }
+  /** Neither export: the columns each one would need. */
+  | { code: 'unrecognised'; missing: { spondClub: string[]; klubbAdmin: string[] } }
 
 export type Result<T> = { ok: true; value: T } | { ok: false; error: ExportError }
+
+export type ExportKind = 'spond-club' | 'klubbadmin'
 
 export interface SpondClubExport {
   members: SpondClubMember[]
@@ -23,12 +27,25 @@ export interface SpondClubExport {
   skippedWithoutName: number
 }
 
+export interface KlubbAdminExport {
+  members: KlubbAdminMember[]
+  skippedWithoutName: number
+}
+
+// The required columns of each export (ticket 03); other columns are ignored.
 const SPOND_CLUB_COLUMNS = {
   memberType: 'Medlemstype',
   firstName: 'Medlem fornavn',
   lastName: 'Medlem etternavn',
   birthDate: 'Fødselsdato',
   groups: 'Grupper',
+} as const
+
+const KLUBBADMIN_COLUMNS = {
+  firstName: 'Fornavn',
+  lastName: 'Etternavn',
+  birthDate: 'Fødselsdato',
+  groups: 'Grupper/grener',
 } as const
 
 type Columns = Record<string, string>
@@ -54,25 +71,42 @@ async function readFirstSheet(file: Blob): Promise<Result<Sheet>> {
   return { ok: true, value: { header: header.map(text), rows } }
 }
 
+const missingColumns = (header: string[], columns: Columns) =>
+  Object.values(columns).filter((title) => !header.includes(title))
+
 /** Finds each required column by its header title; never guesses. */
 function locateColumns<C extends Columns>(header: string[], columns: C): Result<CellOf<C>> {
-  const missing = Object.values(columns).filter((title) => !header.includes(title))
+  const missing = missingColumns(header, columns)
   if (missing.length > 0) return { ok: false, error: { code: 'missing-columns', columns: missing } }
   const index = Object.fromEntries(Object.entries(columns).map(([key, title]) => [key, header.indexOf(title)]))
   return { ok: true, value: (row, key) => row[index[key as string]] }
 }
 
-const text = (value: unknown) => (typeof value === 'string' ? value.trim() : '')
+/** A cell as trimmed text. A number stored in a text-formatted cell is read as a number, so it is converted back. */
+const text = (value: unknown) =>
+  typeof value === 'string' ? value.trim() : typeof value === 'number' ? String(value) : ''
 
-export type ExportKind = 'spond-club'
+/** `dd.mm.yyyy` text as a Date at UTC midnight, like the Spond Club dates. */
+function parseDate(value: string): Date | undefined {
+  const match = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(value)
+  if (!match) return undefined
+  const [day, month, year] = match.slice(1).map(Number)
+  const date = new Date(Date.UTC(year, month - 1, day))
+  // Date.UTC rolls 31.02 over into March; such a date is invalid, not a different day.
+  return date.getUTCDate() === day && date.getUTCMonth() === month - 1 ? date : undefined
+}
 
 /** Tells which export a file is from its header row alone. */
 export async function identifyExport(file: Blob): Promise<Result<ExportKind>> {
   const sheet = await readFirstSheet(file)
   if (!sheet.ok) return sheet
-  const located = locateColumns(sheet.value.header, SPOND_CLUB_COLUMNS)
-  if (!located.ok) return located
-  return { ok: true, value: 'spond-club' }
+  const missing = {
+    spondClub: missingColumns(sheet.value.header, SPOND_CLUB_COLUMNS),
+    klubbAdmin: missingColumns(sheet.value.header, KLUBBADMIN_COLUMNS),
+  }
+  if (missing.spondClub.length === 0) return { ok: true, value: 'spond-club' }
+  if (missing.klubbAdmin.length === 0) return { ok: true, value: 'klubbadmin' }
+  return { ok: false, error: { code: 'unrecognised', missing } }
 }
 
 export async function readSpondClubExport(file: Blob): Promise<Result<SpondClubExport>> {
@@ -104,4 +138,34 @@ export async function readSpondClubExport(file: Blob): Promise<Result<SpondClubE
     members.push(member)
   }
   return { ok: true, value: { members, notMemberCount, skippedWithoutName } }
+}
+
+export async function readKlubbAdminExport(file: Blob): Promise<Result<KlubbAdminExport>> {
+  const sheet = await readFirstSheet(file)
+  if (!sheet.ok) return sheet
+  const located = locateColumns(sheet.value.header, KLUBBADMIN_COLUMNS)
+  if (!located.ok) return located
+  const cell = located.value
+
+  const members: KlubbAdminMember[] = []
+  let skippedWithoutName = 0
+  for (const row of sheet.value.rows) {
+    const member: KlubbAdminMember = { firstName: text(cell(row, 'firstName')), lastName: text(cell(row, 'lastName')) }
+    if (!member.firstName && !member.lastName) {
+      skippedWithoutName++
+      continue
+    }
+    // Every KlubbAdmin cell is text, the birth date included.
+    const birthDate = parseDate(text(cell(row, 'birthDate')))
+    if (birthDate) member.birthDate = birthDate
+    // Entries are `|`-joined in KlubbAdmin and shown joined by `, `.
+    const groups = text(cell(row, 'groups'))
+      .split('|')
+      .map((group) => group.trim())
+      .filter(Boolean)
+      .join(', ')
+    if (groups) member.groups = groups
+    members.push(member)
+  }
+  return { ok: true, value: { members, skippedWithoutName } }
 }
