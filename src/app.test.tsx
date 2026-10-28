@@ -110,7 +110,7 @@ describe('App', () => {
     await dropClub()
 
     expect(await rows('Ikke registrert i KlubbAdmin')).toEqual([
-      ['Kari Hansen', 'mangler', 'ingen gruppe', 'mangler', 'mangler', 'ingen foresatte'],
+      ['Kari Hansen', 'mangler', 'ingen gruppe', 'ingen kontaktinfo'],
     ])
     expect(await rows('Mulige treff')).toEqual([
       ['Per Olsen født mangler · Old boys', 'Per Johan Olsen født 05.06.1970 · ingen gruppe', 'Navneledd mangler'],
@@ -121,7 +121,7 @@ describe('App', () => {
     ])
   })
 
-  it("shows an Unregistered member's email and mobile, and each Guardian's", async () => {
+  it("lists an Unregistered member's own contact details and each Guardian's in one Kontakt column", async () => {
     render(<App />)
 
     drop(
@@ -136,18 +136,22 @@ describe('App', () => {
           'Foresatt 1 telefonnummer': '+4741111111',
           'Foresatt 2 fornavn': 'Per',
           'Foresatt 2 etternavn': 'Nordmann',
+          'Foresatt 3 e-post': 'familie@example.com',
         },
       ]),
       await klubbAdmin([]),
     )
 
     const unregistered = await section('Ikke registrert i KlubbAdmin')
-    const [row] = unregistered.getAllByRole('row').slice(1)
-    const cells = within(row).getAllByRole('cell')
-    expect(cells.slice(3, 5).map((cell) => cell.textContent)).toEqual(['ola@example.com', '+4740000000'])
-    expect(within(cells[5]).getAllByRole('listitem').map((item) => item.textContent)).toEqual([
-      'Kari Nordmann · kari@example.com · +4741111111',
-      'Per Nordmann · e-post mangler · telefon mangler',
+    const contact = within(unregistered.getAllByRole('row')[1]).getAllByRole('cell')[3]
+    const contacts = within(contact)
+      .getAllByRole('listitem')
+      .map((item) => [...item.children].map((part) => part.textContent))
+    expect(contacts).toEqual([
+      ['Medlemmet', 'ola@example.com', '+4740000000'],
+      ['Kari Nordmann', 'kari@example.com', '+4741111111'],
+      ['Per Nordmann', 'ingen e-post', 'ingen telefon'],
+      ['Foresatt', 'familie@example.com', 'ingen telefon'],
     ])
   })
 

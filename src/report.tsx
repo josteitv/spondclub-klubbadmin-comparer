@@ -137,16 +137,36 @@ function PeopleTable({ people, groupsTitle }: { people: Person[]; groupsTitle: s
 
 const Missing = ({ what }: { what: string }) => <span class="missing">{what}</span>
 
-function GuardianContact({ guardian }: { guardian: Guardian }) {
+interface Contact {
+  who: string
+  email?: string
+  phone?: string
+}
+
+/** The member's own details first, if any, then each Guardian (ticket 18). */
+function contactsOf(member: SpondClubMember): Contact[] {
+  const own = member.email || member.phone ? [{ who: 'Medlemmet', email: member.email, phone: member.phone }] : []
+  const guardians = (member.guardians ?? []).map((g: Guardian) => ({ who: name(g) || 'Foresatt', email: g.email, phone: g.phone }))
+  return [...own, ...guardians]
+}
+
+function Contacts({ member }: { member: SpondClubMember }) {
+  const contacts = contactsOf(member)
+  if (contacts.length === 0) return <Missing what="ingen kontaktinfo" />
   return (
-    <li>
-      {name(guardian) || <Missing what="navn mangler" />} · {guardian.email ?? <Missing what="e-post mangler" />} ·{' '}
-      {guardian.phone ? <span class="data nowrap">{guardian.phone}</span> : <Missing what="telefon mangler" />}
-    </li>
+    <ul class="contacts">
+      {contacts.map((c) => (
+        <li>
+          <span class="who">{c.who}</span>
+          {c.email ? <span class="email">{c.email}</span> : <Missing what="ingen e-post" />}
+          {c.phone ? <span class="data nowrap">{c.phone}</span> : <Missing what="ingen telefon" />}
+        </li>
+      ))}
+    </ul>
   )
 }
 
-/** People to register in KlubbAdmin, with their own and their Guardians' contact details (ticket 18). */
+/** People to register in KlubbAdmin, with their own and their Guardians' contact details. */
 function UnregisteredTable({ members }: { members: SpondClubMember[] }) {
   return (
     <table>
@@ -155,9 +175,7 @@ function UnregisteredTable({ members }: { members: SpondClubMember[] }) {
           <th>Navn</th>
           <th>Født</th>
           <th>Grupper i Spond Club</th>
-          <th>E-post</th>
-          <th>Mobil</th>
-          <th>Foresatte</th>
+          <th>Kontakt</th>
         </tr>
       </thead>
       <tbody>
@@ -172,18 +190,8 @@ function UnregisteredTable({ members }: { members: SpondClubMember[] }) {
             <td class="groups">
               <Groups person={p} />
             </td>
-            <td>{p.email ?? <Missing what="mangler" />}</td>
-            <td class="data nowrap">{p.phone ?? <Missing what="mangler" />}</td>
-            <td class="guardians">
-              {p.guardians ? (
-                <ul>
-                  {p.guardians.map((guardian) => (
-                    <GuardianContact guardian={guardian} />
-                  ))}
-                </ul>
-              ) : (
-                <Missing what="ingen foresatte" />
-              )}
+            <td>
+              <Contacts member={p} />
             </td>
           </tr>
         ))}

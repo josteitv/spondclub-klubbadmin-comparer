@@ -284,12 +284,26 @@ td > strong,
   white-space: nowrap;
 }
 
-td.guardians {
+/* One line per contact; who, email and phone line up across the lines (ticket 18). */
+.contacts {
+  display: grid;
+  grid-template-columns: minmax(8ch, max-content) minmax(0, 1fr) max-content;
+  gap: 4px 14px;
   font-size: 0.9rem;
 }
 
-td.guardians li + li {
-  margin-top: 4px;
+.contacts li {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+}
+
+.contacts .who {
+  font-weight: 600;
+}
+
+.contacts .email {
+  overflow-wrap: anywhere;
 }
 
 .candidate + .candidate {

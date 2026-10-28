@@ -91,14 +91,14 @@ See [04](issues/04-matching.md). Only names are compared. Birth date and groups 
 See [06](issues/06-report.md) and the [prototype](https://github.com/josteitv/spondclub-klubbadmin-comparer/tree/prototype/report) (variant A). One read-only page, read top to bottom, with no decisions or checkboxes.
 
 1. **Summary:** one count per section below, each linking to its section, plus the number of Spond Club members and KlubbAdmin members read.
-2. **Ikke registrert i KlubbAdmin** (Unregistered members): name, birth date, and the Spond Club group cell, plus the email and mobile of the member and each Guardian, for registering them ([18](issues/18-contact-details.md)). Hint: "Hvis personen ikke skal være medlem av klubben, endre medlemstypen til «Ikke medlem» i Spond Club."
+2. **Ikke registrert i KlubbAdmin** (Unregistered members): name, birth date, and the Spond Club group cell, plus one Kontakt column listing the member's own email and mobile and each Guardian's name, email and phone, one line per contact, for registering them ([18](issues/18-contact-details.md)). Hint: "Hvis personen ikke skal være medlem av klubben, endre medlemstypen til «Ikke medlem» i Spond Club."
 3. **Mulige treff** (Possible matches): Spond Club person or people next to the KlubbAdmin candidate or candidates, with the reason (missing middle name or other name part, typo, same name more than once). Birth date and groups are shown on both sides.
 4. **Funnet i begge** (Found in both): name, birth date from each system, and the Spond Club group cell.
 5. **Medlemmer i KlubbAdmin som ikke er i Spond Club** (KlubbAdmin-only members): name, birth date, and KlubbAdmin grupper/grener.
 6. **Bottom of the report:** the number of `Ikke medlem` rows left out and of rows skipped for having no name. Then the reminder to delete the exports.
 
 - **Sorting:** within each section, alphabetical by full name, using Norwegian collation.
-- **Missing values:** "mangler" for birth date, email and phone; "ingen gruppe" for group; "ingen foresatte" for no Guardians.
+- **Missing values:** "mangler" for birth date; "ingen gruppe" for group; "ingen e-post" / "ingen telefon" for a contact's missing email or phone; "ingen kontaktinfo" for a member with no contacts.
 
 ## Interface language
 
