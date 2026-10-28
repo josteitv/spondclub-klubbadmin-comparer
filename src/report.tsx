@@ -1,5 +1,5 @@
 import type { ComponentChildren } from 'preact'
-import { useEffect, useState } from 'preact/hooks'
+import { useEffect, useMemo, useState } from 'preact/hooks'
 import type { KlubbAdminExport, SpondClubExport } from './exports/read-export.ts'
 import {
   matchMembers,
@@ -261,7 +261,12 @@ function UnregisteredTable({ members, onCopy }: { members: SpondClubMember[]; on
 }
 
 export function Report({ spondClub, klubbAdmin }: { spondClub: SpondClubExport; klubbAdmin: KlubbAdminExport }) {
-  const result = sorted(matchMembers(spondClub.members, klubbAdmin.members))
+  // Matching a whole club takes about a second; run it once per pair of exports, not on every
+  // render (the copy message re-renders the report).
+  const result = useMemo(
+    () => sorted(matchMembers(spondClub.members, klubbAdmin.members)),
+    [spondClub, klubbAdmin],
+  )
   const [copy, copied] = useCopy()
   return (
     <div class="report">
