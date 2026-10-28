@@ -1,0 +1,121 @@
+/* PROTOTYPE, throwaway: styles for the variants in prototype-unregistered.tsx. */
+
+.proto-switcher {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #111;
+  color: #fff;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.3);
+  font-size: 0.9rem;
+  z-index: 10;
+}
+
+.proto-switcher button {
+  font: inherit;
+  cursor: pointer;
+  border: 0;
+  border-radius: 999px;
+  background: #333;
+  color: #fff;
+  padding: 2px 10px;
+}
+
+.proto-role {
+  font-weight: 600;
+}
+
+.proto-email {
+  overflow-wrap: anywhere;
+}
+
+/* A */
+.proto-a-grid {
+  display: grid;
+  grid-template-columns: minmax(8ch, max-content) minmax(0, 1fr) max-content;
+  gap: 4px 14px;
+  font-size: 0.9rem;
+}
+
+/* B */
+.proto-b {
+  display: grid;
+  gap: 12px;
+}
+
+.proto-b-card {
+  display: grid;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.proto-b-card > header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  align-items: baseline;
+}
+
+.proto-b-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 8px;
+}
+
+.proto-b-tile {
+  display: grid;
+  gap: 2px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.proto-b-tile.own {
+  border-color: var(--accent);
+}
+
+/* C */
+.proto-c tr.first td {
+  border-top: 2px solid var(--line);
+}
+
+.proto-c tr.more td {
+  border-top: 0;
+}
+
+.proto-c td {
+  border-bottom: 0;
+  padding-block: 5px;
+}
+
+/* D */
+.proto-d-main {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 14px;
+  font-size: 0.9rem;
+}
+
+.proto-d details {
+  margin-top: 6px;
+  font-size: 0.9rem;
+}
+
+.proto-d summary {
+  cursor: pointer;
+  color: var(--accent);
+}
+
+.proto-d details .proto-d-main {
+  margin-top: 4px;
+}

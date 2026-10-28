@@ -8,13 +8,14 @@ import {
   type PossibleMatchReason,
   type SpondClubMember,
 } from './matching/match.ts'
+import { PrototypeUnregistered } from './prototype-unregistered.tsx'
 
-const name = (p: Person) => `${p.firstName} ${p.lastName}`.trim()
+export const name = (p: Person) => `${p.firstName} ${p.lastName}`.trim()
 
 const twoDigits = (n: number) => String(n).padStart(2, '0')
 
 /** Birth dates are read as UTC midnight, so they are shown in UTC. */
-function BirthDate({ person: { birthDate } }: { person: Person }) {
+export function BirthDate({ person: { birthDate } }: { person: Person }) {
   if (!birthDate) return <span class="missing">mangler</span>
   return (
     <span class="data">
@@ -23,7 +24,7 @@ function BirthDate({ person: { birthDate } }: { person: Person }) {
   )
 }
 
-const Groups = ({ person }: { person: Person }) =>
+export const Groups = ({ person }: { person: Person }) =>
   person.groups ? <>{person.groups}</> : <span class="missing">ingen gruppe</span>
 
 const REASONS: Record<PossibleMatchReason, string> = {
@@ -135,7 +136,7 @@ function PeopleTable({ people, groupsTitle }: { people: Person[]; groupsTitle: s
   )
 }
 
-const Missing = ({ what }: { what: string }) => <span class="missing">{what}</span>
+export const Missing = ({ what }: { what: string }) => <span class="missing">{what}</span>
 
 function GuardianContact({ guardian }: { guardian: Guardian }) {
   return (
@@ -147,7 +148,7 @@ function GuardianContact({ guardian }: { guardian: Guardian }) {
 }
 
 /** People to register in KlubbAdmin, with their own and their Guardians' contact details (ticket 18). */
-function UnregisteredTable({ members }: { members: SpondClubMember[] }) {
+export function UnregisteredTable({ members }: { members: SpondClubMember[] }) {
   return (
     <table>
       <thead>
@@ -217,7 +218,7 @@ export function Report({ spondClub, klubbAdmin }: { spondClub: SpondClubExport; 
         hint="Hvis personen ikke skal være medlem av klubben, endre medlemstypen til «Ikke medlem» i Spond Club."
         empty={result.unregisteredMembers.length === 0}
       >
-        <UnregisteredTable members={result.unregisteredMembers} />
+        <PrototypeUnregistered members={result.unregisteredMembers} />
       </Section>
       <Section
         id="mulige-treff"
