@@ -221,18 +221,26 @@ function UnregisteredTable({ members, onCopy }: { members: SpondClubMember[]; on
     <table class="unregistered-table">
       <thead>
         <tr>
+          <th>
+            <span class="visually-hidden">Registrert</span>
+          </th>
           <th>Navn</th>
           <th>Født</th>
           <th>Grupper i Spond Club</th>
           <th>Kontakt</th>
-          <th>
-            <span class="visually-hidden">Registrert</span>
-          </th>
         </tr>
       </thead>
       <tbody>
         {members.map((p) => (
           <tr class={registered.has(p) ? 'registered' : undefined}>
+            <td class="tick">
+              <input
+                type="checkbox"
+                checked={registered.has(p)}
+                onChange={() => toggle(p)}
+                aria-label={`${name(p)} er registrert i KlubbAdmin`}
+              />
+            </td>
             <td>
               <strong>{name(p)}</strong>
             </td>
@@ -244,14 +252,6 @@ function UnregisteredTable({ members, onCopy }: { members: SpondClubMember[]; on
             </td>
             <td>
               <Contacts member={p} onCopy={onCopy} />
-            </td>
-            <td class="tick">
-              <input
-                type="checkbox"
-                checked={registered.has(p)}
-                onChange={() => toggle(p)}
-                aria-label={`${name(p)} er registrert i KlubbAdmin`}
-              />
             </td>
           </tr>
         ))}

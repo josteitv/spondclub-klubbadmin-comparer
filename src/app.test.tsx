@@ -110,7 +110,7 @@ describe('App', () => {
     await dropClub()
 
     expect(await rows('Ikke registrert i KlubbAdmin')).toEqual([
-      ['Kari Hansen', 'mangler', 'ingen gruppe', 'ingen kontaktinfo', ''],
+      ['', 'Kari Hansen', 'mangler', 'ingen gruppe', 'ingen kontaktinfo'],
     ])
     expect(await rows('Mulige treff')).toEqual([
       ['Per Olsen født mangler · Old boys', 'Per Johan Olsen født 05.06.1970 · ingen gruppe', 'Navneledd mangler'],
@@ -143,7 +143,7 @@ describe('App', () => {
     )
 
     const unregistered = await section('Ikke registrert i KlubbAdmin')
-    const contact = within(unregistered.getAllByRole('row')[1]).getAllByRole('cell')[3]
+    const contact = within(unregistered.getAllByRole('row')[1]).getAllByRole('cell')[4]
     const contacts = within(contact)
       .getAllByRole('listitem')
       .map((item) => [...item.children].map((part) => part.textContent))
@@ -216,7 +216,7 @@ describe('App', () => {
     const tick = (unregistered: Awaited<ReturnType<typeof section>>, who: string) =>
       unregistered.getByRole('checkbox', { name: `${who} er registrert i KlubbAdmin` })
 
-    it('has a checkbox last in each row that ticks the member off', async () => {
+    it('has a checkbox first in each row that ticks the member off', async () => {
       render(<App />)
       drop(await spondClub([ola, kari]), await klubbAdmin([]))
       const unregistered = await section('Ikke registrert i KlubbAdmin')
@@ -224,7 +224,7 @@ describe('App', () => {
       fireEvent.click(tick(unregistered, 'Ola Nordmann'))
 
       const olaRow = unregistered.getAllByRole('row').find((row) => row.textContent?.includes('Ola Nordmann'))!
-      expect(within(olaRow).getAllByRole('cell').at(-1)!.contains(tick(unregistered, 'Ola Nordmann'))).toBe(true)
+      expect(within(olaRow).getAllByRole('cell')[0].contains(tick(unregistered, 'Ola Nordmann'))).toBe(true)
       expect((tick(unregistered, 'Ola Nordmann') as HTMLInputElement).checked).toBe(true)
     })
 
@@ -302,7 +302,7 @@ describe('App', () => {
     )
 
     const sorted = ['Anna Vik', 'Zara Lie', 'Ægir Moe', 'Øyvind Dahl', 'Åse Berg']
-    expect((await rows('Ikke registrert i KlubbAdmin')).map(([name]) => name)).toEqual(sorted)
+    expect((await rows('Ikke registrert i KlubbAdmin')).map(([, name]) => name)).toEqual(sorted)
     expect((await rows('Medlemmer i KlubbAdmin som ikke er i Spond Club')).map(([name]) => name)).toEqual(
       ['Annae Viksen', 'Zarae Liesen', 'Ægire Moesen', 'Øyvinde Dahlsen', 'Åsee Bergsen'],
     )
