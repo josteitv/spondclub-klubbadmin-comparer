@@ -1,4 +1,5 @@
 import type { ComponentChildren } from 'preact'
+import { useEffect, useState } from 'preact/hooks'
 import type { KlubbAdminExport, SpondClubExport } from './exports/read-export.ts'
 import {
   matchMembers,
@@ -150,7 +151,24 @@ function contactsOf(member: SpondClubMember): Contact[] {
   return [...own, ...guardians]
 }
 
-function Contacts({ member }: { member: SpondClubMember }) {
+/** What a click on a contact detail puts on the clipboard: a Norwegian number without +47, as KlubbAdmin stores it. */
+function forKlubbAdmin(phone: string) {
+  const compact = phone.replace(/\s/g, '')
+  return /^\+47\d{8}$/.test(compact) ? compact.slice(3) : phone
+}
+
+type OnCopy = (text: string) => void
+
+/** One click copies the value, to paste it into KlubbAdmin (ticket 19). */
+function CopyButton({ value, copy, onCopy, class: className }: { value: string; copy?: string; onCopy: OnCopy; class?: string }) {
+  return (
+    <button type="button" class={`copy ${className ?? ''}`} title="Klikk for å kopiere" onClick={() => onCopy(copy ?? value)}>
+      {value}
+    </button>
+  )
+}
+
+function Contacts({ member, onCopy }: { member: SpondClubMember; onCopy: OnCopy }) {
   const contacts = contactsOf(member)
   if (contacts.length === 0) return <Missing what="ingen kontaktinfo" />
   return (
@@ -158,16 +176,36 @@ function Contacts({ member }: { member: SpondClubMember }) {
       {contacts.map((c) => (
         <li>
           <span class="who">{c.who}</span>
-          {c.email ? <span class="email">{c.email}</span> : <Missing what="ingen e-post" />}
-          {c.phone ? <span class="data nowrap">{c.phone}</span> : <Missing what="ingen telefon" />}
+          {c.email ? <CopyButton class="email" value={c.email} onCopy={onCopy} /> : <Missing what="ingen e-post" />}
+          {c.phone ? (
+            <CopyButton class="data nowrap" value={c.phone} copy={forKlubbAdmin(c.phone)} onCopy={onCopy} />
+          ) : (
+            <Missing what="ingen telefon" />
+          )}
         </li>
       ))}
     </ul>
   )
 }
 
+/** Copies to the clipboard and tells the result in a status line that fades after a while. */
+function useCopy(): [OnCopy, string] {
+  const [message, setMessage] = useState('')
+  useEffect(() => {
+    if (!message) return
+    const timer = setTimeout(() => setMessage(''), 3000)
+    return () => clearTimeout(timer)
+  }, [message])
+  const copy = (text: string) =>
+    navigator.clipboard.writeText(text).then(
+      () => setMessage(`Kopiert: ${text}`),
+      () => setMessage('Kunne ikke kopiere. Merk teksten og kopier den selv.'),
+    )
+  return [copy, message]
+}
+
 /** People to register in KlubbAdmin, with their own and their Guardians' contact details. */
-function UnregisteredTable({ members }: { members: SpondClubMember[] }) {
+function UnregisteredTable({ members, onCopy }: { members: SpondClubMember[]; onCopy: OnCopy }) {
   return (
     <table>
       <thead>
@@ -191,7 +229,7 @@ function UnregisteredTable({ members }: { members: SpondClubMember[] }) {
               <Groups person={p} />
             </td>
             <td>
-              <Contacts member={p} />
+              <Contacts member={p} onCopy={onCopy} />
             </td>
           </tr>
         ))}
@@ -202,8 +240,12 @@ function UnregisteredTable({ members }: { members: SpondClubMember[] }) {
 
 export function Report({ spondClub, klubbAdmin }: { spondClub: SpondClubExport; klubbAdmin: KlubbAdminExport }) {
   const result = sorted(matchMembers(spondClub.members, klubbAdmin.members))
+  const [copy, copied] = useCopy()
   return (
     <div class="report">
+      <p class={copied ? 'copied visible' : 'copied'} role="status">
+        {copied}
+      </p>
       <Summary
         counts={[
           ['ikke-registrert', 'unregistered', 'Ikke registrert i KlubbAdmin', result.unregisteredMembers.length],
@@ -225,7 +267,7 @@ export function Report({ spondClub, klubbAdmin }: { spondClub: SpondClubExport; 
         hint="Hvis personen ikke skal være medlem av klubben, endre medlemstypen til «Ikke medlem» i Spond Club."
         empty={result.unregisteredMembers.length === 0}
       >
-        <UnregisteredTable members={result.unregisteredMembers} />
+        <UnregisteredTable members={result.unregisteredMembers} onCopy={copy} />
       </Section>
       <Section
         id="mulige-treff"

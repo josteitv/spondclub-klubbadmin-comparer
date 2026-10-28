@@ -45,6 +45,7 @@ The spec is ready (2026-10-25) and broken into slices; each one is runnable and 
 - [14 Read the KlubbAdmin export](issues/14-read-klubbadmin.md) (done): `readKlubbAdminExport`; `identifyExport` tells the two apart and names what is missing for each.
 - [15 Drop zone and report](issues/15-drop-zone-and-report.md) (built; waiting for the user's check with real exports and in Safari/Edge): `App` in `src/app.tsx`, the report in `src/report.tsx`; component tests plus a CSP browser test of the App.
 - [18 Contact details for Unregistered members](issues/18-contact-details.md) (done): email and mobile for each Unregistered member and their Guardians.
+- [19 Copy contact details with one click](issues/19-copy-contact-details.md) (done): a click on an email or phone number copies it; Norwegian numbers without +47.
 - [16 Norwegian/English and export instructions](issues/16-language-and-instructions.md), unblocked: builds on 15's Norwegian text.
 
 ## Not yet specified

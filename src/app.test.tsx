@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/preact'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/preact'
 import { describe, expect, it, vi } from 'vitest'
 import { App } from './app.tsx'
 import { klubbAdminFile, spondClubFile, xlsxFile } from './exports/test-files.ts'
@@ -153,6 +153,62 @@ describe('App', () => {
       ['Per Nordmann', 'ingen e-post', 'ingen telefon'],
       ['Foresatt', 'familie@example.com', 'ingen telefon'],
     ])
+  })
+
+  describe('copying contact details with one click', () => {
+    function stubClipboard(writeText = vi.fn().mockResolvedValue(undefined)) {
+      Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true })
+      return writeText
+    }
+
+    async function dropMemberWithContacts() {
+      drop(
+        await spondClub([
+          {
+            ...ola,
+            'Medlems-e-post': 'ola@example.com',
+            'Medlem mobil': '+47 400 00 000',
+            'Foresatt 1 fornavn': 'Kari',
+            'Foresatt 1 etternavn': 'Nordmann',
+            'Foresatt 1 telefonnummer': '+46701234567',
+          },
+        ]),
+        await klubbAdmin([]),
+      )
+      return section('Ikke registrert i KlubbAdmin')
+    }
+
+    it('copies an email address and says so', async () => {
+      const writeText = stubClipboard()
+      render(<App />)
+
+      fireEvent.click((await dropMemberWithContacts()).getByRole('button', { name: 'ola@example.com' }))
+
+      expect(writeText).toHaveBeenCalledWith('ola@example.com')
+      await waitFor(() => expect(screen.getByRole('status').textContent).toBe('Kopiert: ola@example.com'))
+    })
+
+    it('copies a Norwegian phone number as digits without +47, and a foreign one as shown', async () => {
+      const writeText = stubClipboard()
+      render(<App />)
+      const unregistered = await dropMemberWithContacts()
+
+      fireEvent.click(unregistered.getByRole('button', { name: '+47 400 00 000' }))
+      fireEvent.click(unregistered.getByRole('button', { name: '+46701234567' }))
+
+      expect(writeText.mock.calls).toEqual([['40000000'], ['+46701234567']])
+    })
+
+    it('says so when the browser refuses to copy', async () => {
+      stubClipboard(vi.fn().mockRejectedValue(new Error('denied')))
+      render(<App />)
+
+      fireEvent.click((await dropMemberWithContacts()).getByRole('button', { name: 'ola@example.com' }))
+
+      await waitFor(() =>
+        expect(screen.getByRole('status').textContent).toBe('Kunne ikke kopiere. Merk teksten og kopier den selv.'),
+      )
+    })
   })
 
   it('shows the reason once when every pair in a Possible match has the same one', async () => {
