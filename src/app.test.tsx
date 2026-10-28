@@ -216,18 +216,16 @@ describe('App', () => {
     const tick = (unregistered: Awaited<ReturnType<typeof section>>, who: string) =>
       unregistered.getByRole('checkbox', { name: `${who} er registrert i KlubbAdmin` })
 
-    it('has a checkbox last in each row, and counts the ticked ones', async () => {
+    it('has a checkbox last in each row that ticks the member off', async () => {
       render(<App />)
       drop(await spondClub([ola, kari]), await klubbAdmin([]))
       const unregistered = await section('Ikke registrert i KlubbAdmin')
-      expect(unregistered.getByText('0 av 2 registrert i KlubbAdmin')).toBeTruthy()
 
       fireEvent.click(tick(unregistered, 'Ola Nordmann'))
 
       const olaRow = unregistered.getAllByRole('row').find((row) => row.textContent?.includes('Ola Nordmann'))!
       expect(within(olaRow).getAllByRole('cell').at(-1)!.contains(tick(unregistered, 'Ola Nordmann'))).toBe(true)
       expect((tick(unregistered, 'Ola Nordmann') as HTMLInputElement).checked).toBe(true)
-      expect(unregistered.getByText('1 av 2 registrert i KlubbAdmin')).toBeTruthy()
     })
 
     it('unticks a member again', async () => {
@@ -239,7 +237,6 @@ describe('App', () => {
       fireEvent.click(tick(unregistered, 'Kari Hansen'))
 
       expect((tick(unregistered, 'Kari Hansen') as HTMLInputElement).checked).toBe(false)
-      expect(unregistered.getByText('0 av 2 registrert i KlubbAdmin')).toBeTruthy()
     })
 
     it('forgets the ticks on Start på nytt', async () => {
@@ -252,7 +249,6 @@ describe('App', () => {
 
       const unregistered = await section('Ikke registrert i KlubbAdmin')
       expect((tick(unregistered, 'Ola Nordmann') as HTMLInputElement).checked).toBe(false)
-      expect(unregistered.getByText('0 av 2 registrert i KlubbAdmin')).toBeTruthy()
     })
   })
 

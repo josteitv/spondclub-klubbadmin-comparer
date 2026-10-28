@@ -345,20 +345,6 @@ button.copy:hover {
 }
 
 /* Ticking off Unregistered members as registered (ticket 20). */
-.progress {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px 12px;
-  margin-bottom: 10px;
-}
-
-.progress progress {
-  width: 220px;
-  height: 10px;
-  accent-color: var(--found);
-}
-
 td.tick {
   text-align: center;
 }
