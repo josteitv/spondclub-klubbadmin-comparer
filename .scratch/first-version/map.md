@@ -46,6 +46,7 @@ The spec is ready (2026-10-25) and broken into slices; each one is runnable and 
 - [15 Drop zone and report](issues/15-drop-zone-and-report.md) (built; waiting for the user's check with real exports and in Safari/Edge): `App` in `src/app.tsx`, the report in `src/report.tsx`; component tests plus a CSP browser test of the App.
 - [18 Contact details for Unregistered members](issues/18-contact-details.md) (done): email and mobile for each Unregistered member and their Guardians.
 - [19 Copy contact details with one click](issues/19-copy-contact-details.md) (done): a click on an email or phone number copies it; Norwegian numbers without +47.
+- [20 Tick off Unregistered members as registered](issues/20-tick-off-registered.md) (done): a Registrert checkbox last in each row, kept in memory only.
 - [16 Norwegian/English and export instructions](issues/16-language-and-instructions.md), unblocked: builds on 15's Norwegian text.
 
 ## Not yet specified
@@ -58,6 +59,6 @@ Nothing. The last three points (data quality, which KlubbAdmin members are expec
 - Analytics and error reporting: see [error-reporting](../error-reporting/issues/01-error-reporting.md).
 - The offline version for Windows: see [offline-version](../offline-version/issues/01-offline-version.md).
 - Exception lists ("not expected in Spond Club").
-- Deciding Possible matches in the tool ("same person" / "not the same") or ticking off Spond Club members as registered; may be added later (see [06](issues/06-report.md)).
+- Deciding Possible matches in the tool ("same person" / "not the same"); may be added later (see [06](issues/06-report.md)). Ticking off Unregistered members as registered was added in [20](issues/20-tick-off-registered.md).
 - Field-level differences between the two systems (e.g. mismatching phone numbers).
 - Distinguishing "removed from Spond Club" from "never in Spond Club" — both are KlubbAdmin-only members.

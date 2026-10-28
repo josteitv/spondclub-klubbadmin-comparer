@@ -204,37 +204,65 @@ function useCopy(): [OnCopy, string] {
   return [copy, message]
 }
 
-/** People to register in KlubbAdmin, with their own and their Guardians' contact details. */
+/**
+ * People to register in KlubbAdmin, with their own and their Guardians' contact details. The
+ * Membership manager ticks each one off once registered (ticket 20); the ticks live only as long as
+ * this report, and are never stored.
+ */
 function UnregisteredTable({ members, onCopy }: { members: SpondClubMember[]; onCopy: OnCopy }) {
+  const [registered, setRegistered] = useState<ReadonlySet<SpondClubMember>>(new Set())
+  const toggle = (member: SpondClubMember) =>
+    setRegistered((old) => {
+      const next = new Set(old)
+      if (!next.delete(member)) next.add(member)
+      return next
+    })
   return (
-    <table>
-      <thead>
-        <tr>
-          <th>Navn</th>
-          <th>Født</th>
-          <th>Grupper i Spond Club</th>
-          <th>Kontakt</th>
-        </tr>
-      </thead>
-      <tbody>
-        {members.map((p) => (
+    <>
+      <p class="progress">
+        <span>
+          {registered.size} av {members.length} registrert i KlubbAdmin
+        </span>
+        <progress max={members.length} value={registered.size} aria-hidden="true" />
+      </p>
+      <table class="unregistered-table">
+        <thead>
           <tr>
-            <td>
-              <strong>{name(p)}</strong>
-            </td>
-            <td>
-              <BirthDate person={p} />
-            </td>
-            <td class="groups">
-              <Groups person={p} />
-            </td>
-            <td>
-              <Contacts member={p} onCopy={onCopy} />
-            </td>
+            <th>Navn</th>
+            <th>Født</th>
+            <th>Grupper i Spond Club</th>
+            <th>Kontakt</th>
+            <th>Registrert</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {members.map((p) => (
+            <tr class={registered.has(p) ? 'registered' : undefined}>
+              <td>
+                <strong>{name(p)}</strong>
+              </td>
+              <td>
+                <BirthDate person={p} />
+              </td>
+              <td class="groups">
+                <Groups person={p} />
+              </td>
+              <td>
+                <Contacts member={p} onCopy={onCopy} />
+              </td>
+              <td class="tick">
+                <input
+                  type="checkbox"
+                  checked={registered.has(p)}
+                  onChange={() => toggle(p)}
+                  aria-label={`${name(p)} er registrert i KlubbAdmin`}
+                />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </>
   )
 }
 

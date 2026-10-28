@@ -344,6 +344,41 @@ button.copy:hover {
   opacity: 1;
 }
 
+/* Ticking off Unregistered members as registered (ticket 20). */
+.progress {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  margin-bottom: 10px;
+}
+
+.progress progress {
+  width: 220px;
+  height: 10px;
+  accent-color: var(--found);
+}
+
+td.tick {
+  text-align: center;
+}
+
+td.tick input {
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  accent-color: var(--found);
+  cursor: pointer;
+}
+
+.unregistered-table tr.registered td:not(.tick) {
+  opacity: 0.45;
+}
+
+.unregistered-table tr.registered td > strong {
+  text-decoration: line-through;
+}
+
 .candidate + .candidate {
   margin-top: 8px;
 }

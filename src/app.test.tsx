@@ -110,7 +110,7 @@ describe('App', () => {
     await dropClub()
 
     expect(await rows('Ikke registrert i KlubbAdmin')).toEqual([
-      ['Kari Hansen', 'mangler', 'ingen gruppe', 'ingen kontaktinfo'],
+      ['Kari Hansen', 'mangler', 'ingen gruppe', 'ingen kontaktinfo', ''],
     ])
     expect(await rows('Mulige treff')).toEqual([
       ['Per Olsen født mangler · Old boys', 'Per Johan Olsen født 05.06.1970 · ingen gruppe', 'Navneledd mangler'],
@@ -211,6 +211,51 @@ describe('App', () => {
     })
   })
 
+  describe('ticking off Unregistered members as registered in KlubbAdmin', () => {
+    const kari = { Medlemstype: 'Medlem', 'Medlem fornavn': 'Kari', 'Medlem etternavn': 'Hansen' }
+    const tick = (unregistered: Awaited<ReturnType<typeof section>>, who: string) =>
+      unregistered.getByRole('checkbox', { name: `${who} er registrert i KlubbAdmin` })
+
+    it('has a checkbox last in each row, and counts the ticked ones', async () => {
+      render(<App />)
+      drop(await spondClub([ola, kari]), await klubbAdmin([]))
+      const unregistered = await section('Ikke registrert i KlubbAdmin')
+      expect(unregistered.getByText('0 av 2 registrert i KlubbAdmin')).toBeTruthy()
+
+      fireEvent.click(tick(unregistered, 'Ola Nordmann'))
+
+      const olaRow = unregistered.getAllByRole('row').find((row) => row.textContent?.includes('Ola Nordmann'))!
+      expect(within(olaRow).getAllByRole('cell').at(-1)!.contains(tick(unregistered, 'Ola Nordmann'))).toBe(true)
+      expect((tick(unregistered, 'Ola Nordmann') as HTMLInputElement).checked).toBe(true)
+      expect(unregistered.getByText('1 av 2 registrert i KlubbAdmin')).toBeTruthy()
+    })
+
+    it('unticks a member again', async () => {
+      render(<App />)
+      drop(await spondClub([ola, kari]), await klubbAdmin([]))
+      const unregistered = await section('Ikke registrert i KlubbAdmin')
+
+      fireEvent.click(tick(unregistered, 'Kari Hansen'))
+      fireEvent.click(tick(unregistered, 'Kari Hansen'))
+
+      expect((tick(unregistered, 'Kari Hansen') as HTMLInputElement).checked).toBe(false)
+      expect(unregistered.getByText('0 av 2 registrert i KlubbAdmin')).toBeTruthy()
+    })
+
+    it('forgets the ticks on Start på nytt', async () => {
+      render(<App />)
+      drop(await spondClub([ola, kari]), await klubbAdmin([]))
+      fireEvent.click(tick(await section('Ikke registrert i KlubbAdmin'), 'Ola Nordmann'))
+
+      fireEvent.click(screen.getByRole('button', { name: 'Start på nytt' }))
+      drop(await spondClub([ola, kari]), await klubbAdmin([]))
+
+      const unregistered = await section('Ikke registrert i KlubbAdmin')
+      expect((tick(unregistered, 'Ola Nordmann') as HTMLInputElement).checked).toBe(false)
+      expect(unregistered.getByText('0 av 2 registrert i KlubbAdmin')).toBeTruthy()
+    })
+  })
+
   it('shows the reason once when every pair in a Possible match has the same one', async () => {
     render(<App />)
     const emma = { Medlemstype: 'Medlem', 'Medlem fornavn': 'Emma', 'Medlem etternavn': 'Larsen' }
@@ -290,7 +335,8 @@ describe('App', () => {
     render(<App />)
 
     await dropClub()
-    await screen.findByRole('region', { name: 'Funnet i begge' })
+    const unregistered = await section('Ikke registrert i KlubbAdmin')
+    fireEvent.click(unregistered.getByRole('checkbox', { name: 'Kari Hansen er registrert i KlubbAdmin' }))
     fireEvent.click(screen.getByRole('button', { name: 'Start på nytt' }))
 
     expect(setItem).not.toHaveBeenCalled()

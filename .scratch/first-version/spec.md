@@ -88,10 +88,10 @@ See [04](issues/04-matching.md). Only names are compared. Birth date and groups 
 
 ## Report
 
-See [06](issues/06-report.md) and the [prototype](https://github.com/josteitv/spondclub-klubbadmin-comparer/tree/prototype/report) (variant A). One read-only page, read top to bottom, with no decisions or checkboxes.
+See [06](issues/06-report.md) and the [prototype](https://github.com/josteitv/spondclub-klubbadmin-comparer/tree/prototype/report) (variant A). One page, read top to bottom. Its only input is the Registrert checkbox on Unregistered members ([20](issues/20-tick-off-registered.md)); there are no decisions on Possible matches.
 
 1. **Summary:** one count per section below, each linking to its section, plus the number of Spond Club members and KlubbAdmin members read.
-2. **Ikke registrert i KlubbAdmin** (Unregistered members): name, birth date, and the Spond Club group cell, plus one Kontakt column listing the member's own email and mobile and each Guardian's name, email and phone, one line per contact, for registering them ([18](issues/18-contact-details.md)). One click on an email or phone number copies it, a Norwegian number without `+47` ([19](issues/19-copy-contact-details.md)). Hint: "Hvis personen ikke skal være medlem av klubben, endre medlemstypen til «Ikke medlem» i Spond Club."
+2. **Ikke registrert i KlubbAdmin** (Unregistered members): name, birth date, and the Spond Club group cell, plus one Kontakt column listing the member's own email and mobile and each Guardian's name, email and phone, one line per contact, for registering them ([18](issues/18-contact-details.md)). One click on an email or phone number copies it, a Norwegian number without `+47` ([19](issues/19-copy-contact-details.md)). A checkbox last in each row ticks the member off as registered in KlubbAdmin, with a count above the table; the ticks are kept in memory only ([20](issues/20-tick-off-registered.md)). Hint: "Hvis personen ikke skal være medlem av klubben, endre medlemstypen til «Ikke medlem» i Spond Club."
 3. **Mulige treff** (Possible matches): Spond Club person or people next to the KlubbAdmin candidate or candidates, with the reason (missing middle name or other name part, typo, same name more than once). Birth date and groups are shown on both sides.
 4. **Funnet i begge** (Found in both): name, birth date from each system, and the Spond Club group cell.
 5. **Medlemmer i KlubbAdmin som ikke er i Spond Club** (KlubbAdmin-only members): name, birth date, and KlubbAdmin grupper/grener.
@@ -126,7 +126,7 @@ See [05](issues/05-how-to-run.md) and [07](issues/07-build-tool.md).
 
 - Saving a session ([saved-session](../saved-session/issues/01-saved-session.md)).
 - The Windows offline version ([offline-version](../offline-version/issues/01-offline-version.md)). The first version only has to stay compatible with it.
-- Deciding Possible matches in the tool, or ticking off Spond Club members as registered.
+- Deciding Possible matches in the tool. (Ticking off Unregistered members as registered was added in [20](issues/20-tick-off-registered.md), in memory only.)
 - Exception lists.
 - Field-level differences (phone, address, …), and registration fields other than the contact details of Unregistered members.
 - Telling "removed from Spond Club" apart from "never in Spond Club".
