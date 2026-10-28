@@ -43,6 +43,7 @@ Spond Club → Members → Active members → select all → Export. Structure c
   - `Medlem etternavn`
   - `Fødselsdato`: an Excel date serial, shown as `dd.mm.yyyy`.
   - `Grupper`: shown as-is, never split.
+- **Optional columns** ([18](issues/18-contact-details.md)): `Medlems-e-post`, `Medlem mobil`, and `Foresatt N fornavn` / `etternavn` / `e-post` / `telefonnummer` for N = 1–4. When missing, the details show as missing.
 - **Other columns** are ignored.
 - **Spond Club members** are rows with `Medlemstype = Medlem`. Rows with `Ikke medlem` are left out and counted.
 
@@ -90,14 +91,14 @@ See [04](issues/04-matching.md). Only names are compared. Birth date and groups 
 See [06](issues/06-report.md) and the [prototype](https://github.com/josteitv/spondclub-klubbadmin-comparer/tree/prototype/report) (variant A). One read-only page, read top to bottom, with no decisions or checkboxes.
 
 1. **Summary:** one count per section below, each linking to its section, plus the number of Spond Club members and KlubbAdmin members read.
-2. **Ikke registrert i KlubbAdmin** (Unregistered members): name, birth date, and the Spond Club group cell. Hint: "Hvis personen ikke skal være medlem av klubben, endre medlemstypen til «Ikke medlem» i Spond Club."
+2. **Ikke registrert i KlubbAdmin** (Unregistered members): name, birth date, and the Spond Club group cell, plus the email and mobile of the member and each Guardian, for registering them ([18](issues/18-contact-details.md)). Hint: "Hvis personen ikke skal være medlem av klubben, endre medlemstypen til «Ikke medlem» i Spond Club."
 3. **Mulige treff** (Possible matches): Spond Club person or people next to the KlubbAdmin candidate or candidates, with the reason (missing middle name or other name part, typo, same name more than once). Birth date and groups are shown on both sides.
 4. **Funnet i begge** (Found in both): name, birth date from each system, and the Spond Club group cell.
 5. **Medlemmer i KlubbAdmin som ikke er i Spond Club** (KlubbAdmin-only members): name, birth date, and KlubbAdmin grupper/grener.
 6. **Bottom of the report:** the number of `Ikke medlem` rows left out and of rows skipped for having no name. Then the reminder to delete the exports.
 
 - **Sorting:** within each section, alphabetical by full name, using Norwegian collation.
-- **Missing values:** "mangler" for birth date, "ingen gruppe" for group.
+- **Missing values:** "mangler" for birth date, email and phone; "ingen gruppe" for group; "ingen foresatte" for no Guardians.
 
 ## Interface language
 
@@ -127,7 +128,7 @@ See [05](issues/05-how-to-run.md) and [07](issues/07-build-tool.md).
 - The Windows offline version ([offline-version](../offline-version/issues/01-offline-version.md)). The first version only has to stay compatible with it.
 - Deciding Possible matches in the tool, or ticking off Spond Club members as registered.
 - Exception lists.
-- Field-level differences (phone, address, …) and registration fields for KlubbAdmin.
+- Field-level differences (phone, address, …), and registration fields other than the contact details of Unregistered members.
 - Telling "removed from Spond Club" apart from "never in Spond Club".
 - Filtering KlubbAdmin-only members by gruppe/gren or membership type.
 - Analytics, and error reporting of any kind (automatic or a "report a problem" link); see [error-reporting](../error-reporting/issues/01-error-reporting.md). Errors are shown to the Membership manager as clear messages only.

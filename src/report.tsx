@@ -1,6 +1,13 @@
 import type { ComponentChildren } from 'preact'
 import type { KlubbAdminExport, SpondClubExport } from './exports/read-export.ts'
-import { matchMembers, type MatchResult, type Person, type PossibleMatchReason } from './matching/match.ts'
+import {
+  matchMembers,
+  type Guardian,
+  type MatchResult,
+  type Person,
+  type PossibleMatchReason,
+  type SpondClubMember,
+} from './matching/match.ts'
 
 const name = (p: Person) => `${p.firstName} ${p.lastName}`.trim()
 
@@ -128,6 +135,63 @@ function PeopleTable({ people, groupsTitle }: { people: Person[]; groupsTitle: s
   )
 }
 
+const Missing = ({ what }: { what: string }) => <span class="missing">{what}</span>
+
+function GuardianContact({ guardian }: { guardian: Guardian }) {
+  return (
+    <li>
+      {name(guardian) || <Missing what="navn mangler" />} · {guardian.email ?? <Missing what="e-post mangler" />} ·{' '}
+      {guardian.phone ? <span class="data nowrap">{guardian.phone}</span> : <Missing what="telefon mangler" />}
+    </li>
+  )
+}
+
+/** People to register in KlubbAdmin, with their own and their Guardians' contact details (ticket 18). */
+function UnregisteredTable({ members }: { members: SpondClubMember[] }) {
+  return (
+    <table>
+      <thead>
+        <tr>
+          <th>Navn</th>
+          <th>Født</th>
+          <th>Grupper i Spond Club</th>
+          <th>E-post</th>
+          <th>Mobil</th>
+          <th>Foresatte</th>
+        </tr>
+      </thead>
+      <tbody>
+        {members.map((p) => (
+          <tr>
+            <td>
+              <strong>{name(p)}</strong>
+            </td>
+            <td>
+              <BirthDate person={p} />
+            </td>
+            <td class="groups">
+              <Groups person={p} />
+            </td>
+            <td>{p.email ?? <Missing what="mangler" />}</td>
+            <td class="data nowrap">{p.phone ?? <Missing what="mangler" />}</td>
+            <td class="guardians">
+              {p.guardians ? (
+                <ul>
+                  {p.guardians.map((guardian) => (
+                    <GuardianContact guardian={guardian} />
+                  ))}
+                </ul>
+              ) : (
+                <Missing what="ingen foresatte" />
+              )}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )
+}
+
 export function Report({ spondClub, klubbAdmin }: { spondClub: SpondClubExport; klubbAdmin: KlubbAdminExport }) {
   const result = sorted(matchMembers(spondClub.members, klubbAdmin.members))
   return (
@@ -153,7 +217,7 @@ export function Report({ spondClub, klubbAdmin }: { spondClub: SpondClubExport; 
         hint="Hvis personen ikke skal være medlem av klubben, endre medlemstypen til «Ikke medlem» i Spond Club."
         empty={result.unregisteredMembers.length === 0}
       >
-        <PeopleTable people={result.unregisteredMembers} groupsTitle="Grupper i Spond Club" />
+        <UnregisteredTable members={result.unregisteredMembers} />
       </Section>
       <Section
         id="mulige-treff"

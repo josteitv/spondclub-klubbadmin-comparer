@@ -278,6 +278,20 @@ td.side {
   width: 40%;
 }
 
+/* Names and phone numbers stay on one line; the table scrolls sideways if it must. */
+td > strong,
+.nowrap {
+  white-space: nowrap;
+}
+
+td.guardians {
+  font-size: 0.9rem;
+}
+
+td.guardians li + li {
+  margin-top: 4px;
+}
+
 .candidate + .candidate {
   margin-top: 8px;
 }

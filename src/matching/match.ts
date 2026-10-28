@@ -5,7 +5,20 @@ export interface Person {
   groups?: string
 }
 
-export type SpondClubMember = Person
+/** A Guardian of a Spond Club member, with the contact details for registering them. */
+export interface Guardian {
+  firstName: string
+  lastName: string
+  email?: string
+  phone?: string
+}
+
+/** Contact details, shown for registering an Unregistered member; never compared. */
+export interface SpondClubMember extends Person {
+  email?: string
+  phone?: string
+  guardians?: Guardian[]
+}
 export type KlubbAdminMember = Person
 
 export interface Match {

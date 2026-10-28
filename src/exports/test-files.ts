@@ -3,7 +3,7 @@ import writeXlsxFile from 'write-excel-file/universal'
 
 type CellValue = string | number | Date | undefined
 
-// The Spond Club export's columns, in order. Guardian and payment contact columns are trimmed to one set.
+// The Spond Club export's columns, in order, without the payment contact and the address columns.
 export const SPOND_CLUB_COLUMNS = [
   'Medlemstype',
   'Grupper',
@@ -12,13 +12,17 @@ export const SPOND_CLUB_COLUMNS = [
   'Medlem etternavn',
   'Medlems-e-post',
   'Medlem mobil',
-  'Foresatt 1 fornavn',
-  'Foresatt 1 etternavn',
+  ...[1, 2, 3, 4].flatMap((n) => [
+    `Foresatt ${n} fornavn`,
+    `Foresatt ${n} etternavn`,
+    `Foresatt ${n} e-post`,
+    `Foresatt ${n} telefonnummer`,
+  ]),
   'Innmeldingsdato',
   'Fødselsdato',
   'Kjønn',
   'Nasjonalitet',
-] as const
+]
 
 // The KlubbAdmin export's columns, in order. Every cell is text-formatted (`@`).
 export const KLUBBADMIN_COLUMNS = [

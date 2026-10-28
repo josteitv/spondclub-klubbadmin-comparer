@@ -17,7 +17,7 @@ A finished spec for the first version: a tool the Membership manager runs to lis
 - Every `Medlem` row is a Spond Club member, whatever the person's age or role (adult athletes, coaches, parents). Someone who shouldn't be a club member is changed to `Ikke medlem` in Spond Club; the report says so in the Unregistered members section. (Grilled 2026-10-25.)
 - All KlubbAdmin-only members are listed, with no filter on gruppe/gren, as the last section of the report: "Medlemmer i KlubbAdmin som ikke er i Spond Club". (Grilled 2026-10-25.)
 - No separate data-quality checks: duplicate names go to Possible matches, missing birth dates show as "mangler", rows without a name are skipped and counted, and Guardians who are also `Medlem` rows are Spond Club members. (Grilled 2026-10-25.)
-- Matching compares full name only (Spond Club member vs KlubbAdmin member). Identical names after normalisation are a match; close names (e.g. missing middle name, typo) are shown as Possible matches for the Membership manager to judge. Birth date and group are shown in the result when available, for viewing only, never compared. No registration fields are shown. The name rule is in [04](issues/04-matching.md).
+- Matching compares full name only (Spond Club member vs KlubbAdmin member). Identical names after normalisation are a match; close names (e.g. missing middle name, typo) are shown as Possible matches for the Membership manager to judge. Birth date and group are shown in the result when available, for viewing only, never compared. Contact details are shown only for Unregistered members: their own email and mobile and their Guardians' name, email and phone, from optional columns, never compared ([18](issues/18-contact-details.md), decided 2026-10-28; this replaces "no registration fields are shown"). The name rule is in [04](issues/04-matching.md).
 - A future offline version for Windows packages the same app in an installer. No technical choice for the web version may conflict with it: the app works fully offline once loaded (code, parser and fonts bundled, no CDN at runtime; analytics and error reporting optional and fail silently), with relative asset paths. See [offline-version](../offline-version/issues/01-offline-version.md).
 
 ## Decisions so far
@@ -44,6 +44,7 @@ The spec is ready (2026-10-25) and broken into slices; each one is runnable and 
 - [13 Read the Spond Club export](issues/13-read-spond-club.md) (done): `src/exports/read-export.ts`; read-excel-file gets a synchronous unzip so it never starts a worker; browser tests under the page CSP in Chromium and Firefox.
 - [14 Read the KlubbAdmin export](issues/14-read-klubbadmin.md) (done): `readKlubbAdminExport`; `identifyExport` tells the two apart and names what is missing for each.
 - [15 Drop zone and report](issues/15-drop-zone-and-report.md) (built; waiting for the user's check with real exports and in Safari/Edge): `App` in `src/app.tsx`, the report in `src/report.tsx`; component tests plus a CSP browser test of the App.
+- [18 Contact details for Unregistered members](issues/18-contact-details.md) (done): email and mobile for each Unregistered member and their Guardians.
 - [16 Norwegian/English and export instructions](issues/16-language-and-instructions.md), unblocked: builds on 15's Norwegian text.
 
 ## Not yet specified

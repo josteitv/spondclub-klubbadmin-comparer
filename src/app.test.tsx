@@ -109,13 +109,45 @@ describe('App', () => {
 
     await dropClub()
 
-    expect(await rows('Ikke registrert i KlubbAdmin')).toEqual([['Kari Hansen', 'mangler', 'ingen gruppe']])
+    expect(await rows('Ikke registrert i KlubbAdmin')).toEqual([
+      ['Kari Hansen', 'mangler', 'ingen gruppe', 'mangler', 'mangler', 'ingen foresatte'],
+    ])
     expect(await rows('Mulige treff')).toEqual([
       ['Per Olsen født mangler · Old boys', 'Per Johan Olsen født 05.06.1970 · ingen gruppe', 'Navneledd mangler'],
     ])
     expect(await rows('Funnet i begge')).toEqual([['Ola Nordmann', '04.03.2012', '04.03.2012', 'Gutter 2012, Vinter']])
     expect(await rows('Medlemmer i KlubbAdmin som ikke er i Spond Club')).toEqual([
       ['Liv Berg', '01.02.1980', 'Styret'],
+    ])
+  })
+
+  it("shows an Unregistered member's email and mobile, and each Guardian's", async () => {
+    render(<App />)
+
+    drop(
+      await spondClub([
+        {
+          ...ola,
+          'Medlems-e-post': 'ola@example.com',
+          'Medlem mobil': '+4740000000',
+          'Foresatt 1 fornavn': 'Kari',
+          'Foresatt 1 etternavn': 'Nordmann',
+          'Foresatt 1 e-post': 'kari@example.com',
+          'Foresatt 1 telefonnummer': '+4741111111',
+          'Foresatt 2 fornavn': 'Per',
+          'Foresatt 2 etternavn': 'Nordmann',
+        },
+      ]),
+      await klubbAdmin([]),
+    )
+
+    const unregistered = await section('Ikke registrert i KlubbAdmin')
+    const [row] = unregistered.getAllByRole('row').slice(1)
+    const cells = within(row).getAllByRole('cell')
+    expect(cells.slice(3, 5).map((cell) => cell.textContent)).toEqual(['ola@example.com', '+4740000000'])
+    expect(within(cells[5]).getAllByRole('listitem').map((item) => item.textContent)).toEqual([
+      'Kari Nordmann · kari@example.com · +4741111111',
+      'Per Nordmann · e-post mangler · telefon mangler',
     ])
   })
 

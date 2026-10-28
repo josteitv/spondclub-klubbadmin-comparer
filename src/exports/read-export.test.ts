@@ -60,6 +60,70 @@ describe('readSpondClubExport', () => {
     expect(result.ok && result.value.members[1]).not.toHaveProperty('birthDate')
   })
 
+  it("reads the member's email and mobile", async () => {
+    const file = await spondClubFile([
+      {
+        Medlemstype: 'Medlem',
+        'Medlem fornavn': 'Ola',
+        'Medlem etternavn': 'Nordmann',
+        'Medlems-e-post': 'ola@example.com',
+        'Medlem mobil': '+4740000000',
+      },
+    ])
+
+    expect(await readSpondClubExport(file)).toMatchObject({
+      ok: true,
+      value: { members: [{ firstName: 'Ola', email: 'ola@example.com', phone: '+4740000000' }] },
+    })
+  })
+
+  it('reads up to four Guardians, leaving out an empty one', async () => {
+    const file = await spondClubFile([
+      {
+        Medlemstype: 'Medlem',
+        'Medlem fornavn': 'Ola',
+        'Medlem etternavn': 'Nordmann',
+        'Foresatt 1 fornavn': 'Kari',
+        'Foresatt 1 etternavn': 'Nordmann',
+        'Foresatt 1 e-post': 'kari@example.com',
+        'Foresatt 1 telefonnummer': '+4741111111',
+        'Foresatt 3 fornavn': 'Per',
+        'Foresatt 3 etternavn': 'Hansen',
+        'Foresatt 4 e-post': 'familie@example.com',
+      },
+    ])
+
+    expect(await readSpondClubExport(file)).toMatchObject({
+      ok: true,
+      value: {
+        members: [
+          {
+            firstName: 'Ola',
+            guardians: [
+              { firstName: 'Kari', lastName: 'Nordmann', email: 'kari@example.com', phone: '+4741111111' },
+              { firstName: 'Per', lastName: 'Hansen' },
+              { firstName: '', lastName: '', email: 'familie@example.com' },
+            ],
+          },
+        ],
+      },
+    })
+  })
+
+  it('reads a file without the contact and Guardian columns, leaving the details out', async () => {
+    const columns = ['Medlemstype', 'Grupper', 'Medlem fornavn', 'Medlem etternavn', 'Fødselsdato']
+    const file = await spondClubFile([{ Medlemstype: 'Medlem', 'Medlem fornavn': 'Ola', 'Medlem etternavn': 'Nordmann' }], columns)
+
+    expect(await readSpondClubExport(file)).toEqual({
+      ok: true,
+      value: {
+        members: [{ firstName: 'Ola', lastName: 'Nordmann' }],
+        notMemberCount: 0,
+        skippedWithoutName: 0,
+      },
+    })
+  })
+
   it.each(['Medlemstype', 'Medlem fornavn', 'Medlem etternavn', 'Fødselsdato', 'Grupper'])(
     'rejects a file without the %s column, naming it',
     async (missing) => {

@@ -7,7 +7,7 @@ import {
   SheetNotFoundError,
   type Row,
 } from 'read-excel-file/universal'
-import type { KlubbAdminMember, SpondClubMember } from '../matching/match.ts'
+import type { Guardian, KlubbAdminMember, SpondClubMember } from '../matching/match.ts'
 
 /** Why a file was rejected. `code` is also the key of its message in the interface. */
 export type ExportError =
@@ -40,6 +40,15 @@ const SPOND_CLUB_COLUMNS = {
   birthDate: 'Fødselsdato',
   groups: 'Grupper',
 } as const
+
+// Optional Spond Club columns: a file without them is still read (ticket 18).
+const SPOND_CLUB_CONTACT_COLUMNS = { email: 'Medlems-e-post', phone: 'Medlem mobil' } as const
+const GUARDIAN_COLUMNS = [1, 2, 3, 4].map((n) => ({
+  firstName: `Foresatt ${n} fornavn`,
+  lastName: `Foresatt ${n} etternavn`,
+  email: `Foresatt ${n} e-post`,
+  phone: `Foresatt ${n} telefonnummer`,
+}))
 
 const KLUBBADMIN_COLUMNS = {
   firstName: 'Fornavn',
@@ -82,6 +91,12 @@ function locateColumns<C extends Columns>(header: string[], columns: C): Result<
   return { ok: true, value: (row, key) => row[index[key as string]] }
 }
 
+/** Reads a column that may be missing from the file; a missing column reads as empty text. */
+const optionalColumn = (header: string[], title: string) => {
+  const index = header.indexOf(title)
+  return (row: Row) => (index === -1 ? '' : text(row[index]))
+}
+
 /** A cell as trimmed text. A number stored in a text-formatted cell is read as a number, so it is converted back. */
 const text = (value: unknown) =>
   typeof value === 'string' ? value.trim() : typeof value === 'number' ? String(value) : ''
@@ -115,6 +130,14 @@ export async function readSpondClubExport(file: Blob): Promise<Result<SpondClubE
   const located = locateColumns(sheet.value.header, SPOND_CLUB_COLUMNS)
   if (!located.ok) return located
   const cell = located.value
+  const email = optionalColumn(sheet.value.header, SPOND_CLUB_CONTACT_COLUMNS.email)
+  const phone = optionalColumn(sheet.value.header, SPOND_CLUB_CONTACT_COLUMNS.phone)
+  const guardianColumns = GUARDIAN_COLUMNS.map((columns) => ({
+    firstName: optionalColumn(sheet.value.header, columns.firstName),
+    lastName: optionalColumn(sheet.value.header, columns.lastName),
+    email: optionalColumn(sheet.value.header, columns.email),
+    phone: optionalColumn(sheet.value.header, columns.phone),
+  }))
 
   const members: SpondClubMember[] = []
   let notMemberCount = 0
@@ -135,6 +158,16 @@ export async function readSpondClubExport(file: Blob): Promise<Result<SpondClubE
     if (birthDate instanceof Date) member.birthDate = birthDate
     const groups = text(cell(row, 'groups'))
     if (groups) member.groups = groups
+    if (email(row)) member.email = email(row)
+    if (phone(row)) member.phone = phone(row)
+    const guardians = guardianColumns.flatMap((columns) => {
+      const guardian: Guardian = { firstName: columns.firstName(row), lastName: columns.lastName(row) }
+      if (columns.email(row)) guardian.email = columns.email(row)
+      if (columns.phone(row)) guardian.phone = columns.phone(row)
+      // A Guardian slot with every field empty is unused.
+      return guardian.firstName || guardian.lastName || guardian.email || guardian.phone ? [guardian] : []
+    })
+    if (guardians.length > 0) member.guardians = guardians
     members.push(member)
   }
   return { ok: true, value: { members, notMemberCount, skippedWithoutName } }
