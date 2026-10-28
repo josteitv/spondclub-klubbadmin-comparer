@@ -9,13 +9,14 @@ import {
   type PossibleMatchReason,
   type SpondClubMember,
 } from './matching/match.ts'
+import { PrototypeRegistered } from './prototype-registered.tsx'
 
-const name = (p: Person) => `${p.firstName} ${p.lastName}`.trim()
+export const name = (p: Person) => `${p.firstName} ${p.lastName}`.trim()
 
 const twoDigits = (n: number) => String(n).padStart(2, '0')
 
 /** Birth dates are read as UTC midnight, so they are shown in UTC. */
-function BirthDate({ person: { birthDate } }: { person: Person }) {
+export function BirthDate({ person: { birthDate } }: { person: Person }) {
   if (!birthDate) return <span class="missing">mangler</span>
   return (
     <span class="data">
@@ -24,7 +25,7 @@ function BirthDate({ person: { birthDate } }: { person: Person }) {
   )
 }
 
-const Groups = ({ person }: { person: Person }) =>
+export const Groups = ({ person }: { person: Person }) =>
   person.groups ? <>{person.groups}</> : <span class="missing">ingen gruppe</span>
 
 const REASONS: Record<PossibleMatchReason, string> = {
@@ -157,7 +158,7 @@ function forKlubbAdmin(phone: string) {
   return /^\+47\d{8}$/.test(compact) ? compact.slice(3) : phone
 }
 
-type OnCopy = (text: string) => void
+export type OnCopy = (text: string) => void
 
 /** One click copies the value, to paste it into KlubbAdmin (ticket 19). */
 function CopyButton({ value, copy, onCopy, class: className }: { value: string; copy?: string; onCopy: OnCopy; class?: string }) {
@@ -168,7 +169,7 @@ function CopyButton({ value, copy, onCopy, class: className }: { value: string; 
   )
 }
 
-function Contacts({ member, onCopy }: { member: SpondClubMember; onCopy: OnCopy }) {
+export function Contacts({ member, onCopy }: { member: SpondClubMember; onCopy: OnCopy }) {
   const contacts = contactsOf(member)
   if (contacts.length === 0) return <Missing what="ingen kontaktinfo" />
   return (
@@ -205,7 +206,7 @@ function useCopy(): [OnCopy, string] {
 }
 
 /** People to register in KlubbAdmin, with their own and their Guardians' contact details. */
-function UnregisteredTable({ members, onCopy }: { members: SpondClubMember[]; onCopy: OnCopy }) {
+export function UnregisteredTable({ members, onCopy }: { members: SpondClubMember[]; onCopy: OnCopy }) {
   return (
     <table>
       <thead>
@@ -267,7 +268,7 @@ export function Report({ spondClub, klubbAdmin }: { spondClub: SpondClubExport; 
         hint="Hvis personen ikke skal være medlem av klubben, endre medlemstypen til «Ikke medlem» i Spond Club."
         empty={result.unregisteredMembers.length === 0}
       >
-        <UnregisteredTable members={result.unregisteredMembers} onCopy={copy} />
+        <PrototypeRegistered members={result.unregisteredMembers} onCopy={copy} />
       </Section>
       <Section
         id="mulige-treff"

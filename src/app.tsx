@@ -7,6 +7,7 @@ import {
   type KlubbAdminExport,
   type SpondClubExport,
 } from './exports/read-export.ts'
+import { DEMO_KLUBBADMIN, DEMO_SPOND_CLUB, demoRequested, PrototypeSwitcher } from './prototype-registered.tsx'
 import { Report } from './report.tsx'
 
 interface Loaded<T> {
@@ -33,8 +34,12 @@ function errorMessage(fileName: string, error: ExportError): string {
 }
 
 export function App() {
-  const [spondClub, setSpondClub] = useState<Loaded<SpondClubExport>>()
-  const [klubbAdmin, setKlubbAdmin] = useState<Loaded<KlubbAdminExport>>()
+  const [spondClub, setSpondClub] = useState<Loaded<SpondClubExport> | undefined>(() =>
+    demoRequested() ? { fileName: 'demo (oppdiktet)', value: DEMO_SPOND_CLUB } : undefined,
+  )
+  const [klubbAdmin, setKlubbAdmin] = useState<Loaded<KlubbAdminExport> | undefined>(() =>
+    demoRequested() ? { fileName: 'demo (oppdiktet)', value: DEMO_KLUBBADMIN } : undefined,
+  )
 
   const [messages, setMessages] = useState<string[]>([])
   const [dragging, setDragging] = useState(false)
@@ -140,6 +145,7 @@ export function App() {
         )}
       </section>
       {spondClub && klubbAdmin && <Report spondClub={spondClub.value} klubbAdmin={klubbAdmin.value} />}
+      <PrototypeSwitcher />
       <footer class="version">Versjon {__APP_VERSION__}</footer>
     </main>
   )
