@@ -1,7 +1,7 @@
 # Drop zone and report
 
 Type: task
-Status: ready-for-agent
+Status: ready-for-human
 Blocked by: 12, 14
 
 ## What to build
@@ -22,8 +22,13 @@ The working tool: drop the two exports, see the report. See [spec](../spec.md) "
 
 ## Acceptance criteria
 
-- [ ] Component tests with invented data: both drop orders; the same kind of file twice; an unrecognised file; all four sections rendered with the right people; sorting with æ/ø/å.
-- [ ] A test asserts nothing is written to any browser storage.
-- [ ] The "Under utvikling" notice is removed from the page (`src/app.tsx`, its test and CSS), and the work-in-progress note is removed from `README.md`.
+- [x] Component tests with invented data: both drop orders; the same kind of file twice; an unrecognised file; all four sections rendered with the right people; sorting with æ/ø/å.
+- [x] A test asserts nothing is written to any browser storage.
+- [x] The "Under utvikling" notice is removed from the page (`src/app.tsx`, its test and CSS), and the work-in-progress note is removed from `README.md`.
 - [ ] Works in the built page under the strict CSP, at desktop widths in Edge, Chrome, Firefox and Safari.
 - [ ] The user checks the report manually with the real exports. Agents never load the files in `.private/` into the tool; see CLAUDE.md.
+
+## Comments
+
+- 2026-10-28, agent: done in `src/app.tsx` (drop zone, file picker, messages, Start på nytt) and `src/report.tsx` (summary, the four sections sorted with `Intl.Collator('nb')`, bottom counts, reminder). Tested at the seams confirmed by the user: 14 component tests on `<App>` with generated files (picker and drop, both orders, same kind twice, unrecognised and non-.xlsx files, all four sections, æ/ø/å sorting, start over, no storage) and a browser test (`src/app.browser.test.ts`) that mounts the App in the CSP frame in Chromium and Firefox, drops both files and checks for no violations. The browser-test frame helper moved to `src/csp-frame-client.ts`. A second file of a kind already loaded replaces the first; while the other kind is still missing, the page says so. When every pair in a Possible match set has the same reason, it is shown once; otherwise each pair is listed with its reason. An empty section shows "Ingen.".
+  The built page (`npm run build && npm run preview`) was checked at 1280 px in Chromium and Firefox via Playwright with invented exports: report renders, no CSP violations or errors. Not done by the agent: WebKit (Safari) could not start here because system libraries are missing (`sudo npx playwright install-deps webkit`), Edge was not run (Chromium-based), and the manual check with the real exports is the user's.

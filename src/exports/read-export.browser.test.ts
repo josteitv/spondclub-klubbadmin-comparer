@@ -1,30 +1,8 @@
 import { describe, expect, it } from 'vitest'
+import { cspFrame as openCspFrame } from '../csp-frame-client.ts'
 import { spondClubFile } from './test-files.ts'
 
-/** An iframe with the page's CSP (build/csp.ts), running csp-frame.ts. */
-async function cspFrame(): Promise<(message: unknown) => Promise<any>> {
-  const frame = document.createElement('iframe')
-  const script = new URL('./csp-frame.ts', import.meta.url).pathname
-  frame.src = `/__csp-frame?module=${encodeURIComponent(script)}`
-  // Vitest posts messages of its own, so wait for the next one from this frame.
-  const nextMessage = () =>
-    new Promise<any>((resolve) => {
-      const listener = (event: MessageEvent) => {
-        if (event.source !== frame.contentWindow) return
-        window.removeEventListener('message', listener)
-        resolve(event.data)
-      }
-      window.addEventListener('message', listener)
-    })
-  const ready = nextMessage()
-  document.body.append(frame)
-  expect(await ready).toBe('ready')
-  return (message) => {
-    const reply = nextMessage()
-    frame.contentWindow!.postMessage(message, '*')
-    return reply
-  }
-}
+const cspFrame = () => openCspFrame(new URL('./csp-frame.ts', import.meta.url))
 
 describe('readSpondClubExport in a real browser', () => {
   it('reads an export under the page CSP without any violation', async () => {

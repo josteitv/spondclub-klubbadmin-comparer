@@ -1,8 +1,8 @@
 # Medlemssjekk: Spond Club vs KlubbAdmin
 
-> **Work in progress: not a working application yet.** The published page is only a placeholder; it can't read exports or compare anything. Progress is tracked in [`.scratch/first-version/`](.scratch/first-version/map.md).
-
 A web page that compares a club's members in Spond Club with its members in KlubbAdmin (NIF). It lists the Spond Club members who are not registered in KlubbAdmin, possible matches to check by hand, everyone found in both, and the KlubbAdmin members who are not in Spond Club.
+
+Use it at <https://josteitv.github.io/spondclub-klubbadmin-comparer/>.
 
 ## Privacy
 

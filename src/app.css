@@ -1,7 +1,19 @@
+/* Colours and layout from the report prototype (variant A, ticket 06), with system fonts only. */
 :root {
   --bg: #f4f6f3;
+  --surface: #ffffff;
   --fg: #18201b;
   --muted: #5a645d;
+  --line: #dce2db;
+  --accent: #1d6b57;
+  --possible: #8a5800;
+  --possible-bg: #fcf1d9;
+  --unregistered: #a63a26;
+  --unregistered-bg: #fae6e1;
+  --klubbadmin-only: #3f53a0;
+  --found: #2f6b3a;
+  --error: #a63a26;
+  --error-bg: #fae6e1;
   color-scheme: light dark;
   font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
   line-height: 1.5;
@@ -10,8 +22,19 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #111513;
+    --surface: #1a201c;
     --fg: #e4eae5;
     --muted: #9ba59e;
+    --line: #2d3530;
+    --accent: #5ec4a6;
+    --possible: #f2b955;
+    --possible-bg: #382b11;
+    --unregistered: #f28d77;
+    --unregistered-bg: #3b1d17;
+    --klubbadmin-only: #a2b1f2;
+    --found: #86cf93;
+    --error: #f28d77;
+    --error-bg: #3b1d17;
   }
 }
 
@@ -24,17 +47,267 @@ body {
 main {
   max-width: 1080px;
   margin: 0 auto;
-  padding: 24px 16px;
+  padding: 24px 16px 48px;
+  display: grid;
+  gap: 28px;
 }
 
-.notice {
-  border: 1px solid var(--muted);
-  border-radius: 6px;
-  padding: 8px 12px;
+h1,
+h2 {
+  margin: 0;
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: 1.75rem;
+}
+
+h2 {
+  font-size: 1.3rem;
+}
+
+p {
+  margin: 0;
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.data {
+  font-variant-numeric: tabular-nums;
+}
+
+.missing {
+  color: var(--muted);
+  font-style: italic;
+}
+
+main > header {
+  display: grid;
+  gap: 4px;
+}
+
+/* Drop zone */
+
+.drop-zone {
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+  background: var(--surface);
+  border: 2px dashed var(--line);
+  border-radius: 10px;
+}
+
+.drop-zone.dragging {
+  border-color: var(--accent);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.button {
+  display: inline-block;
+  font: inherit;
   font-weight: 600;
+  cursor: pointer;
+  padding: 6px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: var(--bg);
 }
 
-footer {
+.button.secondary {
+  background: transparent;
+  color: var(--accent);
+}
+
+.button:focus-within,
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.files {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
+.files li {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 2px 12px;
+  color: var(--muted);
+}
+
+.files li.loaded {
+  color: var(--found);
+  border-color: currentColor;
+}
+
+.messages {
+  display: grid;
+  gap: 6px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  color: var(--error);
+  background: var(--error-bg);
+}
+
+/* Report */
+
+.report {
+  display: grid;
+  gap: 28px;
+}
+
+.summary {
+  display: grid;
+  gap: 8px;
+}
+
+.summary ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.summary a {
+  display: grid;
+  gap: 2px;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  text-decoration: none;
+  color: inherit;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.summary .n {
+  font-size: 1.8rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.unregistered .n,
+.section.unregistered h2 {
+  color: var(--unregistered);
+}
+
+.possible .n,
+.section.possible h2 {
+  color: var(--possible);
+}
+
+.found .n,
+.section.found h2 {
+  color: var(--found);
+}
+
+.klubbadmin-only .n,
+.section.klubbadmin-only h2 {
+  color: var(--klubbadmin-only);
+}
+
+.section {
+  display: grid;
+  gap: 10px;
+  scroll-margin-top: 16px;
+}
+
+.section > header {
+  display: grid;
+  gap: 4px;
+}
+
+.scroll {
+  overflow-x: auto;
+  min-width: 0;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  background: var(--surface);
+}
+
+th,
+td {
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+th {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.groups {
+  max-width: 34ch;
+}
+
+td.side {
+  width: 40%;
+}
+
+.candidate + .candidate {
+  margin-top: 8px;
+}
+
+.candidate .meta {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+td.why {
+  font-size: 0.85rem;
+  color: var(--possible);
+}
+
+.reminder {
+  display: grid;
+  gap: 4px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.delete-reminder {
+  font-weight: 600;
+  color: var(--fg);
+}
+
+.version {
   color: var(--muted);
   font-size: 0.85rem;
 }

@@ -43,8 +43,8 @@ The spec is ready (2026-10-25) and broken into slices; each one is runnable and 
 - [12 Matching engine](issues/12-matching.md) (done): `matchMembers` in `src/matching/match.ts`.
 - [13 Read the Spond Club export](issues/13-read-spond-club.md) (done): `src/exports/read-export.ts`; read-excel-file gets a synchronous unzip so it never starts a worker; browser tests under the page CSP in Chromium and Firefox.
 - [14 Read the KlubbAdmin export](issues/14-read-klubbadmin.md) (done): `readKlubbAdminExport`; `identifyExport` tells the two apart and names what is missing for each.
-- [15 Drop zone and report](issues/15-drop-zone-and-report.md), blocked by 12 and 14.
-- [16 Norwegian/English and export instructions](issues/16-language-and-instructions.md), blocked by 15.
+- [15 Drop zone and report](issues/15-drop-zone-and-report.md) (built; waiting for the user's check with real exports and in Safari/Edge): `App` in `src/app.tsx`, the report in `src/report.tsx`; component tests plus a CSP browser test of the App.
+- [16 Norwegian/English and export instructions](issues/16-language-and-instructions.md), unblocked: builds on 15's Norwegian text.
 
 ## Not yet specified
 

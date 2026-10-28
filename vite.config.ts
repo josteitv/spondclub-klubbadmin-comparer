@@ -32,8 +32,9 @@ export default defineConfig({
     sri({ importMapIntegrity: false, runtimePatchDynamicLinks: false, preloadDynamicChunks: false }),
   ],
   // Pre-bundling would skip the plugin above, so read-excel-file is served as-is; fflate, which
-  // src/exports/fflate-sync.ts imports, is pre-bundled up front so the dev server doesn't reload.
-  optimizeDeps: { exclude: ['read-excel-file'], include: ['fflate'] },
+  // src/exports/fflate-sync.ts imports, and preact/hooks are pre-bundled up front so the dev server
+  // doesn't reload a CSP test frame halfway.
+  optimizeDeps: { exclude: ['read-excel-file'], include: ['fflate', 'preact/hooks'] },
   test: {
     projects: [
       {
